@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:livekit_client/livekit_client.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 const defaultWebAppUrl = 'https://duetxmeet.vercel.app';
 
@@ -38,12 +39,13 @@ class _JoinPageState extends State<JoinPage> {
   Future<void> _join() async {
     setState(() { _loading = true; _error = null; });
     try {
+      final base = _webApp.text.trim().replaceAll(RegExp(r'/+$'), '');
       final res = await http.post(
-        Uri.parse(_webApp.text + '/api/token'),
+        Uri.parse(base + '/api/token'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'code': _code.text.trim(), 'name': _name.text.trim()}),
       );
-      if (res.statusCode != 200) throw Exception('Join failed');
+      if (res.statusCode != 200) throw Exception('Join failed: ' + res.body);
       final data = jsonDecode(res.body);
       if (!mounted) return;
       Navigator.of(context).push(MaterialPageRoute(
@@ -120,6 +122,7 @@ class _MeetingPageState extends State<MeetingPage> {
     _room = room;
     room.addListener(_onRoomChanged);
     try {
+      await [Permission.microphone, Permission.camera].request();
       await room.connect(widget.url, widget.token);
       await room.localParticipant?.setMicrophoneEnabled(true);
       await room.localParticipant?.setCameraEnabled(false);
@@ -182,11 +185,10 @@ class _MeetingPageState extends State<MeetingPage> {
   Widget build(BuildContext context) {
     final tracks = _remoteVideoTracks();
     return Scaffold(
-      appBar: AppBar(title: Text('Duet — ${widget.name}'), actions: [
-        Padding(padding: const EdgeInsets.all(8), child: Text(_status)),
-      ]),
+      appBar: AppBar(title: Text('Duet — ${widget.name}', overflow: TextOverflow.ellipsis)),
       body: Column(
         children: [
+          Padding(padding: const EdgeInsets.all(8), child: Text(_status, style: const TextStyle(fontSize: 12))),
           Expanded(
             child: tracks.isEmpty
                 ? const Center(child: Text('No remote video yet'))
