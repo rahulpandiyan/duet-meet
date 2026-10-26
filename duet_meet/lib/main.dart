@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:livekit_client/livekit_client.dart';
 
-const defaultServerUrl = 'https://duet-alu1jevx.livekit.cloud';
+const defaultWebAppUrl = 'http://10.0.2.2:3000';
 
 void main() => runApp(const DuetApp());
 
@@ -31,7 +31,7 @@ class JoinPage extends StatefulWidget {
 class _JoinPageState extends State<JoinPage> {
   final _code = TextEditingController();
   final _name = TextEditingController(text: 'Guest');
-  final _server = TextEditingController(text: defaultServerUrl);
+  final _webApp = TextEditingController(text: defaultWebAppUrl);
   bool _loading = false;
   String? _error;
 
@@ -39,7 +39,7 @@ class _JoinPageState extends State<JoinPage> {
     setState(() { _loading = true; _error = null; });
     try {
       final res = await http.post(
-        Uri.parse(_server.text + '/api/token'),
+        Uri.parse(_webApp.text + '/api/token'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'code': _code.text.trim(), 'name': _name.text.trim()}),
       );
@@ -76,7 +76,9 @@ class _JoinPageState extends State<JoinPage> {
             const SizedBox(height: 12),
             TextField(controller: _name, decoration: const InputDecoration(labelText: 'Your name', border: OutlineInputBorder())),
             const SizedBox(height: 12),
-            TextField(controller: _server, decoration: const InputDecoration(labelText: 'Server URL', border: OutlineInputBorder())),
+            TextField(controller: _webApp, decoration: const InputDecoration(labelText: 'Web app URL', border: OutlineInputBorder())),
+            const SizedBox(height: 8),
+            const Text('Use your deployed Duet URL or http://10.0.2.2:3000 for emulator', style: TextStyle(fontSize: 12, color: Colors.grey)),
             const SizedBox(height: 16),
             if (_error != null) Text(_error!, style: const TextStyle(color: Colors.red)),
             ElevatedButton(
