@@ -1,12 +1,18 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { Button, Card, Input } from "@/components/ui";
 
-export default function JoinPage() {
+function JoinForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [code, setCode] = useState("");
+  useEffect(() => {
+    const c = searchParams.get("code");
+    if (c) setCode(c);
+  }, [searchParams]);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -57,5 +63,14 @@ export default function JoinPage() {
         </div>
       </Card>
     </main>
+  );
+}
+
+
+export default function JoinPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-app-bg flex items-center justify-center text-text-secondary">Loading...</div>}>
+      <JoinForm />
+    </Suspense>
   );
 }
