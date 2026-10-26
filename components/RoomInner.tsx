@@ -276,7 +276,7 @@ export default function RoomInner({ code, name, isHost, hostToken }: Props) {
       </header>
 
       {/* Main */}
-      <div className="flex-1 flex min-h-0">
+      <div className="flex-1 flex min-h-0 relative">
         {/* Canvas */}
         <div className="flex-1 flex flex-col min-w-0 p-3 gap-3">
           {/* Layout switcher */}
@@ -328,7 +328,7 @@ export default function RoomInner({ code, name, isHost, hostToken }: Props) {
                 </div>
               </div>
             ) : (
-              <div className={`h-full grid gap-3 ${screenTracks.length === 1 ? "grid-cols-1" : screenTracks.length === 2 ? "grid-cols-1 md:grid-cols-2" : screenTracks.length <= 4 ? "grid-cols-2" : "grid-cols-2 lg:grid-cols-3"}`}>
+              <div className={`h-full grid gap-3 ${screenTracks.length === 1 ? "grid-cols-1" : screenTracks.length === 2 ? "grid-cols-1 sm:grid-cols-2" : screenTracks.length <= 4 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
                 {screenTracks.map((t) => renderScreen(t))}
               </div>
             )}
@@ -353,7 +353,7 @@ export default function RoomInner({ code, name, isHost, hostToken }: Props) {
 
         {/* Side panel */}
         {panelOpen && (
-          <aside className="w-80 bg-meeting-surface border-l border-white/5 flex flex-col">
+          <aside className="absolute inset-y-0 right-0 w-80 max-w-[85vw] bg-meeting-surface border-l border-white/5 flex flex-col z-30 md:static md:w-80 md:max-w-none">
             <div className="flex border-b border-white/5">
               <button
                 onClick={() => { setPanel("participants"); }}
@@ -451,7 +451,7 @@ export default function RoomInner({ code, name, isHost, hostToken }: Props) {
       </div>
 
       {/* Bottom control bar */}
-      <footer className="h-20 flex items-center justify-center gap-2 px-4 border-t border-white/5 bg-meeting-surface/80 backdrop-blur">
+      <footer className="h-20 flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 border-t border-white/5 bg-meeting-surface/80 backdrop-blur flex-wrap">
         {!panelOpen && (
           <IconButton onClick={() => setPanelOpen(true)} aria-label="Open panel">
             <Users size={20} />
