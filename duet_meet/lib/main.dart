@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:livekit_client/livekit_client.dart';
 
-const defaultWebAppUrl = 'http://10.0.2.2:3000';
+const defaultWebAppUrl = 'https://duetxmeet.vercel.app';
 
 void main() => runApp(const DuetApp());
 
