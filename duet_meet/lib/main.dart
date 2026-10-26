@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:livekit_client/livekit_client.dart';
@@ -110,6 +111,7 @@ class _MeetingPageState extends State<MeetingPage> {
   bool _camOn = false;
   bool _sharing = false;
   String _status = 'Connecting...';
+  static const _screenChannel = MethodChannel('screen_capture');
 
   @override
   void initState() {
@@ -154,9 +156,12 @@ class _MeetingPageState extends State<MeetingPage> {
     final p = _room?.localParticipant;
     if (p == null) return;
     try {
+      if (!_sharing) await _screenChannel.invokeMethod('start');
       await p.setScreenShareEnabled(!_sharing);
       setState(() { _sharing = !_sharing; });
+      if (_sharing) await _screenChannel.invokeMethod('stop');
     } catch (e) {
+      try { await _screenChannel.invokeMethod('stop'); } catch (_) {}
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Share failed: $e')));
     }
   }
