@@ -37,6 +37,8 @@ import {
   Info,
   ChevronDown,
   Sparkles,
+  Smartphone,
+  Download,
 } from "lucide-react";
 
 interface Props {
@@ -77,6 +79,18 @@ export default function RoomInner({ code, name, isHost, hostToken }: Props) {
   const [currentTime, setCurrentTime] = useState("");
   const [showHostLeaveDialog, setShowHostLeaveDialog] = useState(false);
   const [showHostSettings, setShowHostSettings] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showMobileNotice, setShowMobileNotice] = useState(false);
+  const [showMobileShareModal, setShowMobileShareModal] = useState(false);
+
+  // Detect mobile device on mount
+  useEffect(() => {
+    if (typeof navigator !== "undefined") {
+      const mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "");
+      setIsMobile(mobile);
+      if (mobile) setShowMobileNotice(true);
+    }
+  }, []);
 
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
@@ -200,6 +214,11 @@ export default function RoomInner({ code, name, isHost, hostToken }: Props) {
       }
       return;
     }
+    // Intercept mobile browsers or unsupported getDisplayMedia gracefully
+    if (isMobile || (typeof navigator !== "undefined" && !navigator.mediaDevices?.getDisplayMedia)) {
+      setShowMobileShareModal(true);
+      return;
+    }
     if (roomInfo?.hostOnlyShare && !isHost) {
       setShareError("Only the host is permitted to share in this session.");
       return;
@@ -216,9 +235,14 @@ export default function RoomInner({ code, name, isHost, hostToken }: Props) {
     try {
       await localParticipant.setScreenShareEnabled(true);
     } catch (e: any) {
-      setShareError(e?.message || "Failed to start screen share.");
+      const msg = e?.message || String(e);
+      if (msg.includes("getDisplayMedia") || isMobile) {
+        setShowMobileShareModal(true);
+      } else {
+        setShareError(msg || "Failed to start screen share.");
+      }
     }
-  }, [sharing, localParticipant, roomInfo, isHost, screenTracks.length]);
+  }, [sharing, isMobile, localParticipant, roomInfo, isHost, screenTracks.length]);
 
   const sendChat = useCallback(
     async (e?: React.FormEvent) => {
@@ -476,6 +500,32 @@ export default function RoomInner({ code, name, isHost, hostToken }: Props) {
             <div className="mb-3 px-4 py-2.5 rounded-xl bg-[#EA4335]/20 border border-[#EA4335]/50 text-white text-xs flex items-center justify-between shadow-lg">
               <span>{shareError}</span>
               <button onClick={() => setShareError("")} className="p-1 hover:text-white/80">
+                <X size={14} />
+              </button>
+            </div>
+          )}
+
+          {/* Dismissible Mobile Screen Share Banner */}
+          {showMobileNotice && (
+            <div className="mb-3 px-3.5 py-2.5 rounded-xl bg-[#1E1E20] border border-[#8AB4F8]/40 text-white text-xs flex items-center justify-between shadow-lg animate-in fade-in duration-200">
+              <div className="flex items-center gap-2 min-w-0 pr-2">
+                <Smartphone size={16} className="text-[#8AB4F8] shrink-0" />
+                <span className="truncate sm:overflow-visible">
+                  Joining from mobile? To share your screen, download the{" "}
+                  <a
+                    href="/app-arm64-v8a-release.apk"
+                    download="duet-arm64.apk"
+                    className="text-[#8AB4F8] font-semibold underline hover:text-[#A8C7FA]"
+                  >
+                    Duet Android App
+                  </a>
+                </span>
+              </div>
+              <button
+                onClick={() => setShowMobileNotice(false)}
+                className="p-1 text-[#9AA0A6] hover:text-white rounded-full hover:bg-white/10 shrink-0 transition-colors"
+                title="Dismiss"
+              >
                 <X size={14} />
               </button>
             </div>
@@ -924,6 +974,38 @@ export default function RoomInner({ code, name, isHost, hostToken }: Props) {
               Done
             </button>
           </div>
+        </div>
+      </Dialog>
+
+      {/* Screen Share on Mobile Guidance Dialog */}
+      <Dialog
+        open={showMobileShareModal}
+        onClose={() => setShowMobileShareModal(false)}
+        title="Share your mobile screen"
+        description="Mobile web browsers cannot stream your phone screen due to OS limitations."
+        maxWidth="max-w-md"
+      >
+        <div className="flex flex-col items-center text-center space-y-4 pt-2">
+          <div className="h-16 w-16 rounded-2xl bg-[#8AB4F8]/15 border border-[#8AB4F8]/30 flex items-center justify-center text-[#8AB4F8]">
+            <Smartphone size={32} />
+          </div>
+          <p className="text-xs text-[#9AA0A6] leading-relaxed">
+            To share your screen from an Android phone, install the native <strong className="text-white">Duet App</strong>. It includes full screen recording, device audio capture, and multi-screen support.
+          </p>
+          <a
+            href="/app-arm64-v8a-release.apk"
+            download="duet-arm64.apk"
+            className="w-full py-3.5 px-6 rounded-full bg-[#8AB4F8] hover:bg-[#A8C7FA] text-[#202124] text-sm font-semibold flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98"
+          >
+            <Download size={16} />
+            <span>Download Android App (APK)</span>
+          </a>
+          <button
+            onClick={() => setShowMobileShareModal(false)}
+            className="w-full py-2 text-xs text-[#9AA0A6] hover:text-white transition-colors"
+          >
+            Continue in browser without sharing
+          </button>
         </div>
       </Dialog>
     </div>

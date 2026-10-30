@@ -90,24 +90,24 @@ class _DuetAppState extends State<DuetApp> with WidgetsBindingObserver {
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: DuetColors.surfaceElevated,
+          fillColor: DuetColors.surface,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(color: DuetColors.border, width: 1),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(color: DuetColors.border, width: 1),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(color: DuetColors.primary, width: 1.5),
           ),
           prefixIconColor: DuetColors.textSecondary,
           suffixIconColor: DuetColors.textSecondary,
           labelStyle: const TextStyle(fontSize: 13, color: DuetColors.textSecondary),
           hintStyle: const TextStyle(fontSize: 14, color: DuetColors.textTertiary, fontFamily: 'Outfit'),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(

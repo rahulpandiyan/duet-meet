@@ -25,6 +25,8 @@ import {
   ChevronDown,
   Layers,
   Sparkles,
+  Smartphone,
+  Download,
 } from "lucide-react";
 
 export default function Home() {
@@ -83,6 +85,15 @@ export default function Home() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <a
+              href="/app-arm64-v8a-release.apk"
+              download="duet-arm64.apk"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200/80"
+              title="Download Duet for Android (APK)"
+            >
+              <Smartphone size={14} className="text-blue-600" />
+              <span>Android App</span>
+            </a>
             <Link href="/join">
               <Button variant="ghost" size="sm">
                 Join meeting
@@ -116,9 +127,10 @@ export default function Home() {
               When a project involves multiple workflows, one screen isn&apos;t enough. Duet lets multiple presenters share their screens simultaneously, so everyone follows the complete story in one meeting.
             </p>
 
-            {/* Quick Join & Create Actions */}
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto">
-              <form onSubmit={joinNow} className="flex items-center w-full sm:w-auto flex-1 gap-2">
+            {/* Quick Actions: Responsive Desktop vs Mobile */}
+            {/* Desktop View: Input field with code + Host meeting */}
+            <div className="hidden sm:flex mt-8 items-center justify-center gap-3 max-w-lg mx-auto">
+              <form onSubmit={joinNow} className="flex items-center w-auto flex-1 gap-2">
                 <div className="relative flex-1 sm:w-80">
                   <Input
                     value={code}
@@ -135,13 +147,48 @@ export default function Home() {
                 </Button>
               </form>
 
-              <div className="hidden sm:block text-xs font-medium text-slate-400">or</div>
+              <div className="text-xs font-medium text-slate-400">or</div>
 
-              <Link href="/create" className="w-full sm:w-auto">
-                <Button variant="secondary" size="md" className="h-10 w-full sm:w-auto">
+              <Link href="/create" className="w-auto">
+                <Button variant="secondary" size="md" className="h-10 w-auto">
                   Host meeting
                 </Button>
               </Link>
+            </div>
+
+            {/* Mobile View: Hide text code input and 'or', show direct prominent Download App button */}
+            <div className="sm:hidden mt-7 flex flex-col items-center gap-3 w-full max-w-sm mx-auto px-2">
+              <a
+                href="/app-arm64-v8a-release.apk"
+                download="duet-arm64.apk"
+                className="w-full inline-flex items-center justify-center gap-2.5 h-12 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-semibold text-sm shadow-lg shadow-blue-500/25 transition-all text-center"
+              >
+                <Smartphone size={18} />
+                <span>Download Android App (APK)</span>
+                <Download size={16} />
+              </a>
+              <div className="flex items-center justify-center gap-3 pt-1 text-xs text-slate-500">
+                <Link href="/create" className="font-medium text-slate-600 hover:text-slate-900 transition-colors">
+                  Host meeting
+                </Link>
+                <span className="text-slate-300">•</span>
+                <Link href="/join" className="font-medium text-slate-600 hover:text-slate-900 transition-colors">
+                  Join via web browser
+                </Link>
+              </div>
+            </div>
+
+            {/* Mobile App Download Note (Shown on desktop) */}
+            <div className="hidden sm:flex mt-4 items-center justify-center gap-2 text-xs text-slate-500">
+              <Smartphone size={14} className="text-blue-600 shrink-0" />
+              <span>Joining from a mobile device?</span>
+              <a
+                href="/app-arm64-v8a-release.apk"
+                download="duet-arm64.apk"
+                className="font-semibold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center gap-1"
+              >
+                Download Android App to share your screen <Download size={12} />
+              </a>
             </div>
           </div>
 
@@ -549,6 +596,15 @@ export default function Home() {
                 <Link href="/join" className="hover:text-slate-900 transition-colors">
                   Join meeting
                 </Link>
+              </li>
+              <li>
+                <a
+                  href="/app-arm64-v8a-release.apk"
+                  download="duet-arm64.apk"
+                  className="hover:text-slate-900 transition-colors inline-flex items-center gap-1.5 font-medium text-blue-600"
+                >
+                  <Smartphone size={13} /> Download Android App (APK)
+                </a>
               </li>
               <li>
                 <a href="#features" className="hover:text-slate-900 transition-colors">

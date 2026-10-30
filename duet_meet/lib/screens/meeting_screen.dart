@@ -39,11 +39,13 @@ class MeetingPage extends StatefulWidget {
 }
 
 class ScreenFeed {
+  final String id;
   final String title;
   final bool isSelf;
   final VideoTrack track;
 
   ScreenFeed({
+    required this.id,
     required this.title,
     required this.isSelf,
     required this.track,
@@ -51,6 +53,7 @@ class ScreenFeed {
 }
 
 class ParticipantItem {
+  final String id;
   final String name;
   final bool isSelf;
   final bool isMicOn;
@@ -58,6 +61,7 @@ class ParticipantItem {
   final VideoTrack? cameraTrack;
 
   ParticipantItem({
+    required this.id,
     required this.name,
     required this.isSelf,
     required this.isMicOn,
@@ -71,6 +75,7 @@ class _MeetingPageState extends State<MeetingPage> {
   EventsListener<RoomEvent>? _listener;
   late bool _micOn;
   late bool _camOn;
+  String? _pinnedId;
   String _currentTime = '';
   Timer? _clockTimer;
 
@@ -95,6 +100,8 @@ class _MeetingPageState extends State<MeetingPage> {
           name: 'ic_launcher',
           defType: 'mipmap',
         ),
+        enableWifiLock: true,
+        shouldRequestBatteryOptimizationsOff: false,
       );
       try {
         await FlutterBackground.initialize(androidConfig: androidConfig);
@@ -119,13 +126,16 @@ class _MeetingPageState extends State<MeetingPage> {
     room.addListener(_onRoomChanged);
 
     _listener = room.createListener();
-    _listener?.on<LocalTrackUnpublishedEvent>((event) {
-      if (event.publication.source == TrackSource.screenShareVideo) {
-        if (Platform.isAndroid && FlutterBackground.isBackgroundExecutionEnabled) {
-          FlutterBackground.disableBackgroundExecution();
+    // React in real-time to ALL room events: participant joins, leaves, track publications, mute/unmute
+    _listener?.listen((event) {
+      if (event is LocalTrackUnpublishedEvent) {
+        if (event.publication.source == TrackSource.screenShareVideo) {
+          if (Platform.isAndroid && FlutterBackground.isBackgroundExecutionEnabled) {
+            FlutterBackground.disableBackgroundExecution();
+          }
         }
-        if (mounted) setState(() {});
       }
+      if (mounted) setState(() {});
     });
 
     try {
@@ -180,10 +190,16 @@ class _MeetingPageState extends State<MeetingPage> {
               name: 'ic_launcher',
               defType: 'mipmap',
             ),
+            enableWifiLock: true,
+            shouldRequestBatteryOptimizationsOff: false,
           );
-          await FlutterBackground.initialize(androidConfig: androidConfig);
-          if (!FlutterBackground.isBackgroundExecutionEnabled) {
-            await FlutterBackground.enableBackgroundExecution();
+          try {
+            final initOk = await FlutterBackground.initialize(androidConfig: androidConfig);
+            if (initOk && !FlutterBackground.isBackgroundExecutionEnabled) {
+              await FlutterBackground.enableBackgroundExecution();
+            }
+          } catch (_) {
+            // Foreground service optional fallback
           }
         }
 
@@ -278,6 +294,7 @@ class _MeetingPageState extends State<MeetingPage> {
       for (final pub in localP.videoTrackPublications) {
         if (pub.source == TrackSource.screenShareVideo && !pub.muted && pub.track != null) {
           feeds.add(ScreenFeed(
+            id: 'local_screen',
             title: '${widget.name} (Your Screen)',
             isSelf: true,
             track: pub.track!,
@@ -292,6 +309,7 @@ class _MeetingPageState extends State<MeetingPage> {
       for (final pub in p.videoTrackPublications) {
         if (pub.source == TrackSource.screenShareVideo && !pub.muted && pub.track != null) {
           feeds.add(ScreenFeed(
+            id: pub.sid,
             title: "$pName's Screen",
             isSelf: false,
             track: pub.track!,
@@ -314,6 +332,7 @@ class _MeetingPageState extends State<MeetingPage> {
           .where((pub) => pub.source == TrackSource.camera && !pub.muted)
           .firstOrNull;
       list.add(ParticipantItem(
+        id: p.identity.isNotEmpty ? p.identity : p.sid,
         name: pName,
         isSelf: false,
         isMicOn: !p.isMuted,
@@ -327,6 +346,7 @@ class _MeetingPageState extends State<MeetingPage> {
         .where((pub) => pub.source == TrackSource.camera && !pub.muted)
         .firstOrNull;
     list.add(ParticipantItem(
+      id: 'local_self',
       name: widget.name,
       isSelf: true,
       isMicOn: _micOn,
@@ -542,13 +562,18 @@ class _MeetingPageState extends State<MeetingPage> {
               ),
             ),
 
-            // Video Canvas: Screen share mode or All Participants grid
+            // Video Canvas: Focused Big Mode, Screen share mode, or All Participants grid
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: screenFeeds.isNotEmpty
-                    ? _buildScreenShareLayout(screenFeeds, participants)
-                    : _buildParticipantsView(participants),
+                child: _pinnedId != null
+                    ? _buildFocusedLayout(
+                        screenFeeds: screenFeeds,
+                        participants: participants,
+                      )
+                    : (screenFeeds.isNotEmpty
+                        ? _buildScreenShareLayout(screenFeeds, participants)
+                        : _buildParticipantsView(participants)),
               ),
             ),
 
@@ -683,6 +708,105 @@ class _MeetingPageState extends State<MeetingPage> {
     );
   }
 
+  /// Focused / Pin Mode (When user taps a participant or screen to make it BIG)
+  Widget _buildFocusedLayout({
+    required List<ScreenFeed> screenFeeds,
+    required List<ParticipantItem> participants,
+  }) {
+    ScreenFeed? pinnedScreen;
+    ParticipantItem? pinnedParticipant;
+
+    for (final feed in screenFeeds) {
+      if (feed.id == _pinnedId) {
+        pinnedScreen = feed;
+        break;
+      }
+    }
+
+    if (pinnedScreen == null) {
+      for (final p in participants) {
+        if (p.id == _pinnedId) {
+          pinnedParticipant = p;
+          break;
+        }
+      }
+    }
+
+    // If pinned item disconnected or stopped sharing, fallback to normal layout
+    if (pinnedScreen == null && pinnedParticipant == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _pinnedId = null);
+      });
+      return screenFeeds.isNotEmpty
+          ? _buildScreenShareLayout(screenFeeds, participants)
+          : _buildParticipantsView(participants);
+    }
+
+    // Remaining items to show in bottom thumbnail strip
+    final otherScreens = screenFeeds.where((f) => f.id != _pinnedId).toList();
+    final otherParticipants = participants.where((p) => p.id != _pinnedId).toList();
+
+    return Column(
+      children: [
+        // 1. Big stage viewport
+        Expanded(
+          child: pinnedScreen != null
+              ? _buildSingleScreenTile(pinnedScreen, isPinned: true)
+              : _buildParticipantTile(
+                  pinnedParticipant!.name,
+                  id: pinnedParticipant.id,
+                  isSelf: pinnedParticipant.isSelf,
+                  isMicOn: pinnedParticipant.isMicOn,
+                  isCamOn: pinnedParticipant.isCamOn,
+                  cameraTrack: pinnedParticipant.cameraTrack,
+                  isPinned: true,
+                ),
+        ),
+
+        // 2. Horizontal thumbnail strip to easily switch focus
+        if (otherScreens.isNotEmpty || otherParticipants.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 110,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                ...otherScreens.map((feed) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: SizedBox(
+                        width: 140,
+                        child: GestureDetector(
+                          onTap: () => setState(() => _pinnedId = feed.id),
+                          child: _buildSingleScreenTile(feed, isCompact: true),
+                        ),
+                      ),
+                    )),
+                ...otherParticipants.map((p) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: SizedBox(
+                        width: 110,
+                        child: GestureDetector(
+                          onTap: () => setState(() => _pinnedId = p.id),
+                          child: _buildParticipantTile(
+                            p.name,
+                            id: p.id,
+                            isSelf: p.isSelf,
+                            isMicOn: p.isMicOn,
+                            isCamOn: p.isCamOn,
+                            cameraTrack: p.cameraTrack,
+                            isCompact: true,
+                          ),
+                        ),
+                      ),
+                    )),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   /// Screen Share Presentation View (Shows your screen and/or other screens)
   Widget _buildScreenShareLayout(List<ScreenFeed> screenFeeds, List<ParticipantItem> participants) {
     return Column(
@@ -709,6 +833,7 @@ class _MeetingPageState extends State<MeetingPage> {
                   width: 110,
                   child: _buildParticipantTile(
                     p.name,
+                    id: p.id,
                     isSelf: p.isSelf,
                     isMicOn: p.isMicOn,
                     isCamOn: p.isCamOn,
@@ -724,60 +849,113 @@ class _MeetingPageState extends State<MeetingPage> {
     );
   }
 
-  Widget _buildSingleScreenTile(ScreenFeed feed) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFF3C4043)),
-        ),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: VideoTrackRenderer(
-                feed.track,
-                fit: VideoViewFit.contain,
-              ),
+  Widget _buildSingleScreenTile(
+    ScreenFeed feed, {
+    bool isCompact = false,
+    bool isPinned = false,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _pinnedId = isPinned ? null : feed.id;
+        });
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(isCompact ? 14 : 20),
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(isCompact ? 14 : 20),
+            border: Border.all(
+              color: isPinned ? const Color(0xFF8AB4F8) : const Color(0xFF3C4043),
+              width: isPinned ? 1.5 : 1.0,
             ),
-            Positioned(
-              bottom: 12,
-              left: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF202124).withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF8AB4F8),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      feed.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+          ),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: VideoTrackRenderer(
+                  feed.track,
+                  fit: VideoViewFit.contain,
                 ),
               ),
-            ),
-          ],
+
+              // Title Pill
+              Positioned(
+                bottom: isCompact ? 6 : 12,
+                left: isCompact ? 6 : 12,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isCompact ? 6 : 12,
+                    vertical: isCompact ? 3 : 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF202124).withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: isCompact ? 6 : 8,
+                        height: isCompact ? 6 : 8,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF8AB4F8),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        feed.title,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: isCompact ? 10 : 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Focus / Unpin Button
+              if (!isCompact)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF202124).withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: isPinned ? const Color(0xFF8AB4F8) : Colors.white12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isPinned ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
+                          size: 15,
+                          color: isPinned ? const Color(0xFF8AB4F8) : Colors.white70,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          isPinned ? 'Exit focus' : 'Focus',
+                          style: TextStyle(
+                            color: isPinned ? const Color(0xFF8AB4F8) : Colors.white70,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -794,46 +972,7 @@ class _MeetingPageState extends State<MeetingPage> {
       ),
       itemBuilder: (ctx, i) {
         final feed = feeds[i];
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF3C4043)),
-            ),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: VideoTrackRenderer(
-                    feed.track,
-                    fit: VideoViewFit.contain,
-                  ),
-                ),
-                Positioned(
-                  bottom: 8,
-                  left: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF202124).withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white12),
-                    ),
-                    child: Text(
-                      feed.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+        return _buildSingleScreenTile(feed, isCompact: true);
       },
     );
   }
@@ -843,6 +982,7 @@ class _MeetingPageState extends State<MeetingPage> {
     if (participants.isEmpty) {
       return _buildParticipantTile(
         widget.name,
+        id: 'local_self',
         isSelf: true,
         isMicOn: _micOn,
         isCamOn: _camOn,
@@ -853,6 +993,7 @@ class _MeetingPageState extends State<MeetingPage> {
       final p = participants.first;
       return _buildParticipantTile(
         p.name,
+        id: p.id,
         isSelf: p.isSelf,
         isMicOn: p.isMicOn,
         isCamOn: p.isCamOn,
@@ -867,6 +1008,7 @@ class _MeetingPageState extends State<MeetingPage> {
           Expanded(
             child: _buildParticipantTile(
               participants[0].name,
+              id: participants[0].id,
               isSelf: participants[0].isSelf,
               isMicOn: participants[0].isMicOn,
               isCamOn: participants[0].isCamOn,
@@ -877,6 +1019,7 @@ class _MeetingPageState extends State<MeetingPage> {
           Expanded(
             child: _buildParticipantTile(
               participants[1].name,
+              id: participants[1].id,
               isSelf: participants[1].isSelf,
               isMicOn: participants[1].isMicOn,
               isCamOn: participants[1].isCamOn,
@@ -897,6 +1040,7 @@ class _MeetingPageState extends State<MeetingPage> {
         children: participants.map((p) {
           return _buildParticipantTile(
             p.name,
+            id: p.id,
             isSelf: p.isSelf,
             isMicOn: p.isMicOn,
             isCamOn: p.isCamOn,
@@ -919,6 +1063,7 @@ class _MeetingPageState extends State<MeetingPage> {
         final p = participants[i];
         return _buildParticipantTile(
           p.name,
+          id: p.id,
           isSelf: p.isSelf,
           isMicOn: p.isMicOn,
           isCamOn: p.isCamOn,
@@ -928,116 +1073,162 @@ class _MeetingPageState extends State<MeetingPage> {
     );
   }
 
-  /// Google Meet Video/Avatar Tile
+  /// Google Meet Video/Avatar Tile (Interactive: tap to focus/make big)
   Widget _buildParticipantTile(
     String name, {
+    required String id,
     required bool isSelf,
     required bool isMicOn,
     required bool isCamOn,
     VideoTrack? cameraTrack,
     bool isCompact = false,
+    bool isPinned = false,
   }) {
     final critterUrl =
         'https://api.dicebear.com/10.x/critters/png?seed=${Uri.encodeComponent(name)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&size=256';
 
     final hasVideo = cameraTrack != null && isCamOn;
 
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      decoration: BoxDecoration(
-        color: const Color(0xFF28292A),
-        borderRadius: BorderRadius.circular(isCompact ? 14 : 20),
-        border: Border.all(color: const Color(0xFF3C4043)),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black26,
-            offset: Offset(0, 4),
-            blurRadius: 10,
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _pinnedId = isPinned ? null : id;
+        });
+      },
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          color: const Color(0xFF28292A),
+          borderRadius: BorderRadius.circular(isCompact ? 14 : 20),
+          border: Border.all(
+            color: isPinned ? const Color(0xFF8AB4F8) : const Color(0xFF3C4043),
+            width: isPinned ? 1.5 : 1.0,
           ),
-        ],
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // 1. Video or Avatar Feed
-          if (hasVideo)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(isCompact ? 14 : 20),
-              child: VideoTrackRenderer(
-                cameraTrack,
-                fit: VideoViewFit.cover,
-              ),
-            )
-          else
-            Center(
-              child: Container(
-                width: isCompact ? 52 : 96,
-                height: isCompact ? 52 : 96,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFF1E1F20),
-                  border: Border.all(color: Colors.white12, width: 2),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              offset: Offset(0, 4),
+              blurRadius: 10,
+            ),
+          ],
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // 1. Video or Avatar Feed
+            if (hasVideo)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(isCompact ? 14 : 20),
+                child: VideoTrackRenderer(
+                  cameraTrack,
+                  fit: VideoViewFit.cover,
                 ),
-                child: ClipOval(
-                  child: Image.network(
-                    critterUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Center(
-                      child: Icon(Icons.person_rounded, size: isCompact ? 28 : 48, color: Colors.white70),
+              )
+            else
+              Center(
+                child: Container(
+                  width: isCompact ? 52 : (isPinned ? 120 : 96),
+                  height: isCompact ? 52 : (isPinned ? 120 : 96),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF1E1F20),
+                    border: Border.all(color: Colors.white12, width: 2),
+                  ),
+                  child: ClipOval(
+                    child: Image.network(
+                      critterUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Center(
+                        child: Icon(Icons.person_rounded, size: isCompact ? 28 : (isPinned ? 60 : 48), color: Colors.white70),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
 
-          // 2. Top-right Muted Mic Indicator
-          if (!isMicOn)
+            // 2. Focus / Unpin Badge (top-left)
+            if (!isCompact)
+              Positioned(
+                top: 10,
+                left: 10,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF202124).withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: isPinned ? const Color(0xFF8AB4F8) : Colors.white12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isPinned ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
+                        size: 15,
+                        color: isPinned ? const Color(0xFF8AB4F8) : Colors.white70,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        isPinned ? 'Exit focus' : 'Focus',
+                        style: TextStyle(
+                          color: isPinned ? const Color(0xFF8AB4F8) : Colors.white70,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            // 3. Top-right Muted Mic Indicator
+            if (!isMicOn)
+              Positioned(
+                top: isCompact ? 6 : 10,
+                right: isCompact ? 6 : 10,
+                child: Container(
+                  width: isCompact ? 22 : 28,
+                  height: isCompact ? 22 : 28,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF202124).withValues(alpha: 0.9),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white10),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.mic_off_rounded,
+                      color: const Color(0xFF8AB4F8),
+                      size: isCompact ? 12 : 14,
+                    ),
+                  ),
+                ),
+              ),
+
+            // 4. Bottom-left Participant Name
             Positioned(
-              top: isCompact ? 6 : 10,
-              right: isCompact ? 6 : 10,
-              child: Container(
-                width: isCompact ? 22 : 28,
-                height: isCompact ? 22 : 28,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF202124).withValues(alpha: 0.9),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white10),
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.mic_off_rounded,
-                    color: const Color(0xFF8AB4F8),
-                    size: isCompact ? 12 : 14,
-                  ),
+              bottom: isCompact ? 6 : 10,
+              left: isCompact ? 8 : 12,
+              right: isCompact ? 8 : 12,
+              child: Text(
+                isSelf ? '$name (You)' : name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: isCompact ? 10 : 12,
+                  fontWeight: FontWeight.w500,
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black87,
+                      offset: Offset(0, 1),
+                      blurRadius: 4,
+                    ),
+                  ],
                 ),
               ),
             ),
-
-          // 3. Bottom-left Participant Name
-          Positioned(
-            bottom: isCompact ? 6 : 10,
-            left: isCompact ? 8 : 12,
-            right: isCompact ? 8 : 12,
-            child: Text(
-              isSelf ? '$name (You)' : name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isCompact ? 10 : 12,
-                fontWeight: FontWeight.w500,
-                shadows: const [
-                  Shadow(
-                    color: Colors.black87,
-                    offset: Offset(0, 1),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
