@@ -15,9 +15,10 @@ export default function HeroPreview() {
       <Image
         src="/hero-preview.webp"
         alt="Duet simultaneous multi-screen sharing preview"
-        width={1024}
-        height={576}
+        width={1672}
+        height={941}
         priority
+        unoptimized
         className="w-full h-auto object-cover block rounded-2xl"
       />
     </motion.div>
