@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.duet.meet",
+      "sha256_cert_fingerprints": [
+        "2A:3B:2B:17:00:D2:FF:A2:2D:EB:46:5C:F7:22:BE:45:51:AB:A7:AA:80:7A:55:43:B5:EA:A5:62:68:B6:FB:B4"
+      ]
+    }
+  }
+]
