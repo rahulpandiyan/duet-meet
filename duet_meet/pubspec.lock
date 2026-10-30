@@ -41,6 +41,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  chottu_link:
+    dependency: "direct main"
+    description:
+      name: chottu_link
+      sha256: "527cec1e874a0940e6642b8462d0fcb06d7fb4e7f19cb359fa10576a2f9a98f8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.4"
   clock:
     dependency: transitive
     description:

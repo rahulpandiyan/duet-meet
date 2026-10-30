@@ -50,6 +50,13 @@
                 <data android:scheme="https" android:host="duetxmeet.vercel.app" android:pathPrefix="/room"/>
                 <data android:scheme="https" android:host="duetxmeet.vercel.app" android:pathPrefix="/lobby"/>
             </intent-filter>
+            <!-- Deep linking filter for ChottuLink dynamic links: https://duetxmeet.chottu.link -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="duetxmeet.chottu.link"/>
+            </intent-filter>
         </activity>
 
         <!-- Background Service for Android Screen Sharing (LiveKit & WebRTC) -->
