@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme.dart';
 import '../widgets/duet_button.dart';
 import 'meeting_screen.dart';
@@ -26,11 +27,37 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
 
   // Zoom & Google Meet options
   bool _startWithMic = true;
-  bool _startWithCam = true;
+  bool _startWithCam = false;
 
   // Created room data
   Map<String, dynamic>? _createdRoom;
   bool _copied = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _startWithMic = prefs.getBool('duet_start_with_mic') ?? true;
+        _startWithCam = prefs.getBool('duet_start_with_cam') ?? false;
+      });
+    }
+  }
+
+  void _onMicChanged(bool val) {
+    setState(() => _startWithMic = val);
+    SharedPreferences.getInstance().then((prefs) => prefs.setBool('duet_start_with_mic', val));
+  }
+
+  void _onCamChanged(bool val) {
+    setState(() => _startWithCam = val);
+    SharedPreferences.getInstance().then((prefs) => prefs.setBool('duet_start_with_cam', val));
+  }
 
   @override
   void dispose() {
@@ -278,7 +305,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                         ),
                         value: _startWithMic,
                         activeTrackColor: DuetColors.primary,
-                        onChanged: (val) => setState(() => _startWithMic = val),
+                        onChanged: _onMicChanged,
                       ),
                       Divider(height: 1, color: DuetColors.border.withValues(alpha: 0.5)),
                       SwitchListTile.adaptive(
@@ -293,7 +320,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                         ),
                         value: _startWithCam,
                         activeTrackColor: DuetColors.primary,
-                        onChanged: (val) => setState(() => _startWithCam = val),
+                        onChanged: _onCamChanged,
                       ),
                     ],
                   ),

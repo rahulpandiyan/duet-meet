@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme.dart';
 import '../widgets/duet_button.dart';
 import 'meeting_screen.dart';
@@ -36,6 +37,29 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
     super.initState();
     _codeController = TextEditingController(text: widget.initialCode ?? '');
     _codeController.addListener(() => setState(() {}));
+    _loadPreferences();
+  }
+
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      final startWithMic = prefs.getBool('duet_start_with_mic') ?? true;
+      final startWithCam = prefs.getBool('duet_start_with_cam') ?? false;
+      setState(() {
+        _muteMicOnJoin = !startWithMic;
+        _turnOffVideoOnJoin = !startWithCam;
+      });
+    }
+  }
+
+  void _onMuteMicChanged(bool val) {
+    setState(() => _muteMicOnJoin = val);
+    SharedPreferences.getInstance().then((prefs) => prefs.setBool('duet_start_with_mic', !val));
+  }
+
+  void _onTurnOffVideoChanged(bool val) {
+    setState(() => _turnOffVideoOnJoin = val);
+    SharedPreferences.getInstance().then((prefs) => prefs.setBool('duet_start_with_cam', !val));
   }
 
   @override
@@ -372,7 +396,7 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
                             ),
                             value: _muteMicOnJoin,
                             activeTrackColor: DuetColors.primary,
-                            onChanged: (val) => setState(() => _muteMicOnJoin = val),
+                            onChanged: _onMuteMicChanged,
                           ),
                           Divider(height: 1, color: DuetColors.border.withValues(alpha: 0.5)),
                           SwitchListTile.adaptive(
@@ -387,7 +411,7 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
                             ),
                             value: _turnOffVideoOnJoin,
                             activeTrackColor: DuetColors.primary,
-                            onChanged: (val) => setState(() => _turnOffVideoOnJoin = val),
+                            onChanged: _onTurnOffVideoChanged,
                           ),
                         ],
                       ),

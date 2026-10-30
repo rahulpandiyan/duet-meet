@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:chottu_link/chottu_link.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/join_meeting_screen.dart';
@@ -46,7 +47,20 @@ class _DuetAppState extends State<DuetApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _loadSavedServerUrl();
     _listenToChottuLinks();
+  }
+
+  Future<void> _loadSavedServerUrl() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString('duet_server_url');
+      if (saved != null && saved.isNotEmpty) {
+        setState(() => _serverUrl = saved);
+      }
+    } catch (e) {
+      debugPrint('Error loading saved server url: $e');
+    }
   }
 
   @override
@@ -78,32 +92,30 @@ class _DuetAppState extends State<DuetApp> with WidgetsBindingObserver {
         debugPrint('ChottuLink onLinkReceived error: $err');
       });
     } catch (e) {
-      debugPrint('ChottuLink listen exception: $e');
+      debugPrint('ChottuLink stream setup: $e');
     }
   }
 
-  void _updateServerUrl(String url) {
-    setState(() {
-      _serverUrl = url;
-    });
-  }
-
-  /// Parses deep link URLs like duet://meet/ABC-DEF-GHI, https://duetxmeet.vercel.app/join?code=ABC-DEF-GHI, or https://duetxmeet.chottu.link/ABC-DEF-GHI
   String? _extractCodeFromUri(Uri uri) {
-    if (uri.queryParameters.containsKey('code')) {
-      return uri.queryParameters['code']?.toUpperCase();
-    }
-    // Check regex pattern for XXX-XXXX-XXX or XXX-XXX-XXX anywhere in link
-    final match = RegExp(r'[A-Za-z0-9]{3,4}-[A-Za-z0-9]{3,4}-[A-Za-z0-9]{3,4}').firstMatch(uri.toString());
-    if (match != null) {
-      return match.group(0)!.toUpperCase();
-    }
-    if (uri.pathSegments.isNotEmpty) {
-      final last = uri.pathSegments.last;
-      if (last != 'join' && last != 'lobby' && last != 'room' && last.isNotEmpty) {
-        return last.toUpperCase();
+    // 1. Check path: e.g. /ABC-DEF-GHI or /room/ABC-DEF-GHI or /bsOPHP
+    final segments = uri.pathSegments.where((s) => s.isNotEmpty).toList();
+    if (segments.isNotEmpty) {
+      final last = segments.last.toUpperCase();
+      // Match 3-segment code (e.g. ABC-DEF-GHI)
+      final regex3 = RegExp(r'^[A-Z0-9]{3}-[A-Z0-9]{3,4}-[A-Z0-9]{3}$');
+      if (regex3.hasMatch(last)) return last;
+      // Match raw short code or path
+      if (last.length >= 4 && last.length <= 16) {
+        return last;
       }
     }
+
+    // 2. Check query param: ?code=ABC-DEF-GHI
+    final qCode = uri.queryParameters['code'];
+    if (qCode != null && qCode.trim().isNotEmpty) {
+      return qCode.trim().toUpperCase();
+    }
+
     return null;
   }
 
@@ -111,82 +123,55 @@ class _DuetAppState extends State<DuetApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: _navigatorKey,
-      title: 'Duet',
+      title: 'Duet Meet',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        useMaterial3: true,
         brightness: Brightness.dark,
         scaffoldBackgroundColor: DuetColors.appBg,
         fontFamily: 'Outfit',
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: DuetColors.primary,
-          brightness: Brightness.dark,
+        textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
+        colorScheme: const ColorScheme.dark(
+          primary: DuetColors.primary,
           surface: DuetColors.surface,
-        ),
-        textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme).apply(
-          fontFamily: 'Outfit',
-          bodyColor: DuetColors.textPrimary,
-          displayColor: DuetColors.textPrimary,
-        ),
-        appBarTheme: const AppBarTheme(
-          elevation: 0,
-          backgroundColor: DuetColors.appBg,
-          foregroundColor: DuetColors.textPrimary,
-          scrolledUnderElevation: 0,
-          centerTitle: false,
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: DuetColors.surface,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: DuetColors.border, width: 1),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: DuetColors.border, width: 1),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: DuetColors.primary, width: 1.5),
+          fillColor: DuetColors.surfaceElevated,
+          hintStyle: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: DuetColors.textTertiary,
           ),
           prefixIconColor: DuetColors.textSecondary,
           suffixIconColor: DuetColors.textSecondary,
-          labelStyle: const TextStyle(fontSize: 13, color: DuetColors.textSecondary),
-          hintStyle: const TextStyle(fontSize: 14, color: DuetColors.textTertiary, fontFamily: 'Outfit'),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            elevation: 0,
-            backgroundColor: DuetColors.primary,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: DuetColors.border, width: 1.2),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: DuetColors.border, width: 1.2),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: DuetColors.primary, width: 1.6),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: DuetColors.danger, width: 1.4),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: DuetColors.danger, width: 1.6),
           ),
         ),
       ),
-      onGenerateRoute: (settings) {
-        if (settings.name != null) {
-          try {
-            final uri = Uri.parse(settings.name!);
-            final code = _extractCodeFromUri(uri);
-            if (code != null) {
-              return MaterialPageRoute(
-                builder: (_) => JoinMeetingScreen(
-                  serverUrl: _serverUrl,
-                  initialCode: code,
-                ),
-              );
-            }
-          } catch (_) {}
-        }
-        return null;
-      },
       home: HomeScreen(
         serverUrl: _serverUrl,
-        onServerUrlChanged: _updateServerUrl,
+        onServerUrlChanged: (url) {
+          setState(() => _serverUrl = url);
+        },
       ),
     );
   }

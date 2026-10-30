@@ -582,6 +582,9 @@ export default function Home() {
             <p className="mt-4 text-xs text-slate-400">
               © {new Date().getFullYear()} Duet. All rights reserved.
             </p>
+            <p className="mt-1.5 text-xs font-medium text-slate-600">
+              Made with ❤️ by Rahul Pandiyan
+            </p>
           </div>
 
           <div>
