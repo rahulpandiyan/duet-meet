@@ -165,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: const Color(0xFF151B2C),
+            color: DuetColors.surface,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: DuetColors.border),
             boxShadow: const [
@@ -283,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
             height: 112,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             decoration: BoxDecoration(
-              color: const Color(0xFF151B2C),
+              color: DuetColors.surface,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: DuetColors.border),
               boxShadow: const [
@@ -308,21 +308,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1C2235),
+                    color: DuetColors.surfaceElevated,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: DuetColors.primaryBorder),
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0x663B82F6),
-                        offset: Offset(6, 6),
-                        blurRadius: 14,
-                        spreadRadius: -8,
+                        color: Color(0x66000000),
+                        offset: Offset(4, 4),
+                        blurRadius: 10,
+                        spreadRadius: -4,
                       ),
                       BoxShadow(
-                        color: Color(0x10FFFFFF),
-                        offset: Offset(-4, -4),
-                        blurRadius: 10,
-                        spreadRadius: -8,
+                        color: Color(0x0FFFFFFF),
+                        offset: Offset(-2, -2),
+                        blurRadius: 6,
+                        spreadRadius: -2,
                       ),
                     ],
                   ),

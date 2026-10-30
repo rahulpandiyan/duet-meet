@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/join_meeting_screen.dart';
@@ -74,7 +75,8 @@ class _DuetAppState extends State<DuetApp> with WidgetsBindingObserver {
           brightness: Brightness.dark,
           surface: DuetColors.surface,
         ),
-        fontFamily: 'Inter',
+        textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
+        fontFamily: GoogleFonts.outfit().fontFamily,
         appBarTheme: const AppBarTheme(
           elevation: 0,
           backgroundColor: DuetColors.appBg,

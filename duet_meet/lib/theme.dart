@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
 
-/// Design tokens for modern dark UI
+/// Pure Neutral Dark Design Tokens (Zero blue tint in dark mode)
 class DuetColors {
-  // App Background & Surface
-  static const appBg = Color(0xFF0B1020);
-  static const surface = Color(0xFF151B2C);
-  static const surfaceElevated = Color(0xFF1C2235);
-  static const surfaceGlass = Color(0xCC151B2C);
-  static const border = Color(0xFF2A324A);
-  static const borderLight = Color(0xFF232A40);
+  // Pure Neutral Dark Canvas (Deep charcoal / true dark)
+  static const appBg = Color(0xFF121214);
+  static const surface = Color(0xFF1E1E20);
+  static const surfaceElevated = Color(0xFF26262A);
+  static const surfaceGlass = Color(0xCC1E1E20);
+  static const border = Color(0xFF2D2D32);
+  static const borderLight = Color(0xFF38383E);
 
-  // Text Colors
-  static const textPrimary = Color(0xFFF8FAFC);
-  static const textSecondary = Color(0xFFCBD5E1);
-  static const textTertiary = Color(0xFF94A3B8);
+  // Pure Text Hierarchy (Neutral white to zinc)
+  static const textPrimary = Color(0xFFFFFFFF);
+  static const textSecondary = Color(0xFFA1A1AA);
+  static const textTertiary = Color(0xFF71717A);
 
   // Brand Accents
   static const primary = Color(0xFF3B82F6);
   static const primaryHover = Color(0xFF2563EB);
   static const primaryGlow = Color(0xFF60A5FA);
-  static const primaryTint = Color(0xFF1E293B);
-  static const primaryBorder = Color(0xFF334155);
+  static const primaryTint = Color(0xFF26262A);
+  static const primaryBorder = Color(0xFF3F3F46);
   static const accent = Color(0xFF22D3EE);
 
   // Semantic
@@ -28,47 +28,47 @@ class DuetColors {
   static const warning = Color(0xFFF59E0B);
   static const danger = Color(0xFFEF4444);
 
-  // In-call Dark Surface Tokens
-  static const inCallBg = Color(0xFF0B1020);
-  static const inCallTile = Color(0xFF151B2C);
-  static const inCallDock = Color(0xFF0F1629);
+  // In-call Pure Neutral Dark Surfaces
+  static const inCallBg = Color(0xFF121214);
+  static const inCallTile = Color(0xFF1E1E20);
+  static const inCallDock = Color(0xFF18181A);
 }
 
-/// Modern Neumorphism & Claymorphism Styles
+/// Modern Neumorphism & Claymorphism Styles (Neutral Dark)
 class DuetMorphism {
-  /// Subtle card shadow (90% flat, 10% soft ambient morphism)
+  /// Pure black ambient dual shadow
   static List<BoxShadow> get cardShadow => const [
         BoxShadow(
-          color: Color(0x66000000),
+          color: Color(0x80000000),
           offset: Offset(8, 8),
           blurRadius: 20,
           spreadRadius: -6,
         ),
         BoxShadow(
-          color: Color(0x10FFFFFF),
+          color: Color(0x0AFFFFFF),
           offset: Offset(-4, -4),
           blurRadius: 12,
           spreadRadius: -6,
         ),
       ];
 
-  /// Soft clay-like icon container decoration
+  /// Soft clay-like icon container decoration (neutral dark)
   static BoxDecoration get iconContainer => BoxDecoration(
         color: DuetColors.surfaceElevated,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: DuetColors.primaryBorder, width: 1.2),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x663B82F6),
+            color: Color(0x66000000),
             offset: Offset(4, 4),
             blurRadius: 12,
             spreadRadius: -4,
           ),
           BoxShadow(
-            color: Color(0x10FFFFFF),
-            offset: Offset(-3, -3),
-            blurRadius: 8,
-            spreadRadius: -4,
+            color: Color(0x0FFFFFFF),
+            offset: Offset(-2, -2),
+            blurRadius: 6,
+            spreadRadius: -2,
           ),
         ],
       );
@@ -134,17 +134,17 @@ class DuetMorphism {
               ],
       );
 
-  /// Neumorphic + Claymorphic secondary button decoration
+  /// Neumorphic + Claymorphic secondary button decoration (neutral dark)
   static BoxDecoration claySecondaryDecoration({bool isPressed = false}) => BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: isPressed
-              ? const [Color(0xFF151B2C), Color(0xFF121624)]
-              : const [Color(0xFF1E263C), Color(0xFF151B2C)],
+              ? const [Color(0xFF1E1E20), Color(0xFF18181A)]
+              : const [Color(0xFF26262A), Color(0xFF1E1E20)],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0x33FFFFFF), width: 1.2),
+        border: Border.all(color: const Color(0x26FFFFFF), width: 1.2),
         boxShadow: isPressed
             ? const [
                 BoxShadow(
@@ -161,10 +161,10 @@ class DuetMorphism {
                   spreadRadius: -4,
                 ),
                 BoxShadow(
-                  color: Color(0x12FFFFFF),
-                  offset: Offset(-3, -3),
-                  blurRadius: 10,
-                  spreadRadius: -4,
+                  color: Color(0x0FFFFFFF),
+                  offset: Offset(-2, -2),
+                  blurRadius: 8,
+                  spreadRadius: -2,
                 ),
               ],
       );

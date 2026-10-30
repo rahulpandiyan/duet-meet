@@ -98,8 +98,8 @@ class _DuetButtonState extends State<DuetButton> {
 
       case DuetButtonVariant.secondary:
         gradientColors = _isPressed
-            ? const [Color(0xFF151B2C), Color(0xFF121624)]
-            : const [Color(0xFF1E263C), Color(0xFF151B2C)];
+            ? const [Color(0xFF1E1E20), Color(0xFF18181A)]
+            : const [Color(0xFF26262A), Color(0xFF1E1E20)];
         topBorderColor = const Color(0x33FFFFFF);
         textColor = DuetColors.textPrimary;
         iconColor = DuetColors.primaryGlow;
@@ -119,10 +119,10 @@ class _DuetButtonState extends State<DuetButton> {
                   spreadRadius: -4,
                 ),
                 BoxShadow(
-                  color: Color(0x12FFFFFF),
-                  offset: Offset(-3, -3),
-                  blurRadius: 10,
-                  spreadRadius: -4,
+                  color: Color(0x0FFFFFFF),
+                  offset: Offset(-2, -2),
+                  blurRadius: 8,
+                  spreadRadius: -2,
                 ),
               ];
         break;

@@ -116,7 +116,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                     width: 42,
                     height: 42,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF151B2C),
+                      color: DuetColors.surface,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: DuetColors.border),
                       boxShadow: const [
@@ -176,7 +176,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF151B2C),
+        color: DuetColors.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: DuetColors.border),
         boxShadow: const [
@@ -203,21 +203,21 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1C2235),
+                  color: DuetColors.surfaceElevated,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: DuetColors.primaryBorder),
                   boxShadow: const [
                     BoxShadow(
-                      color: Color(0x663B82F6),
-                      offset: Offset(6, 6),
-                      blurRadius: 14,
-                      spreadRadius: -8,
+                      color: Color(0x66000000),
+                      offset: Offset(4, 4),
+                      blurRadius: 10,
+                      spreadRadius: -4,
                     ),
                     BoxShadow(
-                      color: Color(0x10FFFFFF),
-                      offset: Offset(-4, -4),
-                      blurRadius: 10,
-                      spreadRadius: -8,
+                      color: Color(0x0FFFFFFF),
+                      offset: Offset(-2, -2),
+                      blurRadius: 6,
+                      spreadRadius: -2,
                     ),
                   ],
                 ),
@@ -322,14 +322,16 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
         border: Border.all(color: DuetColors.border),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x080F172A),
-            offset: Offset(0, 6),
-            blurRadius: 18,
+            color: Color(0x66000000),
+            offset: Offset(8, 8),
+            blurRadius: 20,
+            spreadRadius: -6,
           ),
           BoxShadow(
-            color: Color(0x030F172A),
-            offset: Offset(0, 1),
-            blurRadius: 4,
+            color: Color(0x10FFFFFF),
+            offset: Offset(-4, -4),
+            blurRadius: 12,
+            spreadRadius: -6,
           ),
         ],
       ),

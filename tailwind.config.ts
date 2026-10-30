@@ -10,6 +10,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: [
+          '"Outfit"',
           "-apple-system",
           "BlinkMacSystemFont",
           '"Segoe UI"',
@@ -63,11 +64,11 @@ const config: Config = {
         "text-primary": "#0F172A",
         "text-secondary": "#475569",
         "text-tertiary": "#94A3B8",
-        // Dark meeting room surfaces
-        "meeting-bg": "#0A0D14",
-        "meeting-surface": "#121620",
-        "meeting-raised": "#1A202E",
-        "meeting-hover": "#242C3E",
+        // Dark neutral meeting room surfaces (pure neutral dark, no blue)
+        "meeting-bg": "#121214",
+        "meeting-surface": "#1E1E20",
+        "meeting-raised": "#26262A",
+        "meeting-hover": "#2E2E32",
         "meeting-border": "rgba(255, 255, 255, 0.08)",
         "meeting-border-strong": "rgba(255, 255, 255, 0.16)",
       },

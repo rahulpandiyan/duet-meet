@@ -160,14 +160,16 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
                   border: Border.all(color: DuetColors.border),
                   boxShadow: const [
                     BoxShadow(
-                      color: Color(0x080F172A),
-                      offset: Offset(0, 6),
-                      blurRadius: 18,
+                      color: Color(0x66000000),
+                      offset: Offset(8, 8),
+                      blurRadius: 20,
+                      spreadRadius: -6,
                     ),
                     BoxShadow(
-                      color: Color(0x030F172A),
-                      offset: Offset(0, 1),
-                      blurRadius: 4,
+                      color: Color(0x10FFFFFF),
+                      offset: Offset(-4, -4),
+                      blurRadius: 12,
+                      spreadRadius: -6,
                     ),
                   ],
                 ),
