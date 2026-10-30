@@ -37,9 +37,13 @@ void main() {
     await tester.tap(find.text('Join a call'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Enter call details'), findsOneWidget);
+    expect(find.text('Join a meeting'), findsOneWidget);
     expect(find.text('MEETING CODE OR LINK'), findsOneWidget);
-    expect(find.text('YOUR DISPLAY NAME'), findsOneWidget);
+    expect(find.text('YOUR NAME'), findsOneWidget);
+    expect(find.text('JOIN OPTIONS'), findsOneWidget);
+    expect(find.text("Don't connect to audio"), findsOneWidget);
+    expect(find.text('Turn off my video'), findsOneWidget);
+    expect(find.text('Join meeting'), findsOneWidget);
   });
 
   testWidgets('Navigation to Create link works correctly', (WidgetTester tester) async {
@@ -50,7 +54,11 @@ void main() {
     await tester.tap(find.text('Create link'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Instant meeting'), findsOneWidget);
+    expect(find.text('New meeting'), findsOneWidget);
     expect(find.text('YOUR DISPLAY NAME'), findsOneWidget);
+    expect(find.text('MEETING OPTIONS'), findsOneWidget);
+    expect(find.text('Start with microphone on'), findsOneWidget);
+    expect(find.text('Start with video on'), findsOneWidget);
+    expect(find.text('Start instant meeting'), findsOneWidget);
   });
 }

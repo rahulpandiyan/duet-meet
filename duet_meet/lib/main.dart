@@ -70,13 +70,17 @@ class _DuetAppState extends State<DuetApp> with WidgetsBindingObserver {
         useMaterial3: true,
         brightness: Brightness.dark,
         scaffoldBackgroundColor: DuetColors.appBg,
+        fontFamily: 'Outfit',
         colorScheme: ColorScheme.fromSeed(
           seedColor: DuetColors.primary,
           brightness: Brightness.dark,
           surface: DuetColors.surface,
         ),
-        textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
-        fontFamily: GoogleFonts.outfit().fontFamily,
+        textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme).apply(
+          fontFamily: 'Outfit',
+          bodyColor: DuetColors.textPrimary,
+          displayColor: DuetColors.textPrimary,
+        ),
         appBarTheme: const AppBarTheme(
           elevation: 0,
           backgroundColor: DuetColors.appBg,

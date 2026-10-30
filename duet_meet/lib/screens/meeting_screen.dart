@@ -15,6 +15,8 @@ class MeetingPage extends StatefulWidget {
   final String name;
   final bool isHost;
   final String? hostToken;
+  final bool initialMicOn;
+  final bool initialCamOn;
 
   const MeetingPage({
     super.key,
@@ -24,6 +26,8 @@ class MeetingPage extends StatefulWidget {
     required this.name,
     required this.isHost,
     this.hostToken,
+    this.initialMicOn = true,
+    this.initialCamOn = false,
   });
 
   @override
@@ -32,8 +36,8 @@ class MeetingPage extends StatefulWidget {
 
 class _MeetingPageState extends State<MeetingPage> {
   Room? _room;
-  bool _micOn = true;
-  bool _camOn = false;
+  late bool _micOn;
+  late bool _camOn;
   bool _sharing = false;
   String _currentTime = '';
   Timer? _clockTimer;
@@ -41,6 +45,8 @@ class _MeetingPageState extends State<MeetingPage> {
   @override
   void initState() {
     super.initState();
+    _micOn = widget.initialMicOn;
+    _camOn = widget.initialCamOn;
     _updateTime();
     _clockTimer = Timer.periodic(const Duration(seconds: 30), (_) => _updateTime());
     _connect();
@@ -65,14 +71,11 @@ class _MeetingPageState extends State<MeetingPage> {
     try {
       await [Permission.microphone, Permission.camera].request();
       await room.connect(widget.url, widget.token);
-      await room.localParticipant?.setMicrophoneEnabled(true);
-      await room.localParticipant?.setCameraEnabled(false);
+      await room.localParticipant?.setMicrophoneEnabled(_micOn);
+      await room.localParticipant?.setCameraEnabled(_camOn);
 
       if (mounted) {
-        setState(() {
-          _micOn = true;
-          _camOn = false;
-        });
+        setState(() {});
       }
     } catch (_) {}
   }
