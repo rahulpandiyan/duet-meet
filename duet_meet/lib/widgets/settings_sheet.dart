@@ -74,11 +74,20 @@ class _SettingsSheetState extends State<SettingsSheet> {
     final effectiveBase = base.isNotEmpty ? base : 'https://duetxmeet.vercel.app';
     final uri = Uri.parse('$effectiveBase$path');
     try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
       }
     } catch (e) {
-      debugPrint('Failed to launch URL: $e');
+      debugPrint('Launch externalApplication error: $e. Trying platformDefault...');
+      try {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      } catch (e2) {
+        debugPrint('Failed to launch URL: $e2');
+      }
     }
   }
 
