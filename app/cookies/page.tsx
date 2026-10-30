@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import LegalLayout from "@/components/LegalLayout";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Cookie Policy",
+  description:
+    "Duet Cookie Policy: Understand our minimal, strictly necessary local storage usage with zero third-party advertising cookies.",
+  alternates: {
+    canonical: "/cookies",
+  },
+};
 
 export default function CookiesPage() {
   return (

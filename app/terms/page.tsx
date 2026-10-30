@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import LegalLayout from "@/components/LegalLayout";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description:
+    "Read the Terms of Service for Duet, including usage guidelines, accountless guest access, and user responsibilities.",
+  alternates: {
+    canonical: "/terms",
+  },
+};
 
 export default function TermsPage() {
   return (

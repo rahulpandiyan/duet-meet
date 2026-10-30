@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import LegalLayout from "@/components/LegalLayout";
 import { Mail, Shield, AlertTriangle, FileText, Server } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Contact & Support",
+  description:
+    "Get in touch with the Duet engineering and support team for questions, feedback, or technical assistance.",
+  alternates: {
+    canonical: "/contact",
+  },
+};
 
 export default function ContactPage() {
   return (

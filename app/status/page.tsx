@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import LegalLayout from "@/components/LegalLayout";
 import { CheckCircle2, Activity, Zap, Globe } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "System Status",
+  description:
+    "Real-time operational status of Duet signaling servers, LiveKit SFU media relays, and global edge network.",
+  alternates: {
+    canonical: "/status",
+  },
+};
 
 const SERVICES = [
   {

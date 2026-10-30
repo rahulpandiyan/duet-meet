@@ -1,6 +1,16 @@
+import type { Metadata } from "next";
 import LegalLayout from "@/components/LegalLayout";
 import Link from "next/link";
 import { Monitor, Smartphone, Shield, LayoutGrid, Zap, Download } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Help Center & Documentation",
+  description:
+    "Guides, troubleshooting, FAQs, and setup tips for hosting and joining simultaneous multi-screen meetings with Duet.",
+  alternates: {
+    canonical: "/help",
+  },
+};
 
 export default function HelpPage() {
   return (

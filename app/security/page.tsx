@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import LegalLayout from "@/components/LegalLayout";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Security Architecture",
+  description:
+    "Detailed overview of Duet's end-to-end WebRTC encryption, DTLS-SRTP protocols, SFU relay security, and data protection practices.",
+  alternates: {
+    canonical: "/security",
+  },
+};
 
 export default function SecurityPage() {
   return (

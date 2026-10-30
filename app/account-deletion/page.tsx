@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import LegalLayout from "@/components/LegalLayout";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Data Retention & Account Deletion",
+  description:
+    "Information regarding Duet's ephemeral zero-retention data lifecycle and local session clearing.",
+  alternates: {
+    canonical: "/account-deletion",
+  },
+};
 
 export default function AccountDeletionPage() {
   return (

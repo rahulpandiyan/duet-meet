@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import LegalLayout from "@/components/LegalLayout";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Acceptable Use Policy",
+  description:
+    "Guidelines and rules governing conduct, multi-screen sharing, and media transmission across the Duet platform.",
+  alternates: {
+    canonical: "/acceptable-use",
+  },
+};
 
 export default function AcceptableUsePage() {
   return (
