@@ -207,27 +207,16 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: DuetColors.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: DuetColors.border),
-                  ),
-                  child: TextField(
-                    controller: _nameController,
-                    style: const TextStyle(fontSize: 15, color: DuetColors.textPrimary, fontWeight: FontWeight.w500),
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Alex (Host)',
-                      hintStyle: TextStyle(
-                        fontSize: 14,
-                        color: DuetColors.textTertiary,
-                      ),
-                      prefixIcon: Icon(LucideIcons.user, size: 20, color: DuetColors.textSecondary),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                TextField(
+                  controller: _nameController,
+                  style: const TextStyle(fontSize: 15, color: DuetColors.textPrimary, fontWeight: FontWeight.w500),
+                  decoration: const InputDecoration(
+                    hintText: 'e.g. Alex (Host)',
+                    hintStyle: TextStyle(
+                      fontSize: 14,
+                      color: DuetColors.textTertiary,
                     ),
+                    prefixIcon: Icon(LucideIcons.user, size: 19, color: DuetColors.textSecondary),
                   ),
                 ),
 

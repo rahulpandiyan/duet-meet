@@ -242,65 +242,54 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: DuetColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: DuetColors.border),
+                    TextField(
+                      controller: _codeController,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'monospace',
+                        color: DuetColors.textPrimary,
+                        letterSpacing: 1.5,
                       ),
-                      child: TextField(
-                        controller: _codeController,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'monospace',
-                          color: DuetColors.textPrimary,
-                          letterSpacing: 1.5,
+                      textCapitalization: TextCapitalization.characters,
+                      decoration: InputDecoration(
+                        hintText: 'e.g. ABC-DEF-GHI or paste link',
+                        hintStyle: const TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'Outfit',
+                          letterSpacing: 0,
+                          color: DuetColors.textTertiary,
                         ),
-                        textCapitalization: TextCapitalization.characters,
-                        decoration: InputDecoration(
-                          hintText: 'e.g. ABC-DEF-GHI or paste link',
-                          hintStyle: const TextStyle(
-                            fontSize: 14,
-                            fontFamily: 'Outfit',
-                            letterSpacing: 0,
-                            color: DuetColors.textTertiary,
-                          ),
-                          prefixIcon: const Icon(LucideIcons.keyboard, size: 20, color: DuetColors.textSecondary),
-                          suffixIcon: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (hasCode)
-                                IconButton(
-                                  icon: const Icon(LucideIcons.x, size: 16, color: DuetColors.textTertiary),
-                                  onPressed: () => _codeController.clear(),
-                                  tooltip: 'Clear',
-                                ),
+                        prefixIcon: const Icon(LucideIcons.keyboard, size: 19, color: DuetColors.textSecondary),
+                        suffixIcon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (hasCode)
                               IconButton(
-                                icon: const Icon(LucideIcons.clipboard, size: 18, color: DuetColors.primaryGlow),
-                                onPressed: _pasteFromClipboard,
-                                tooltip: 'Paste from clipboard',
+                                icon: const Icon(LucideIcons.x, size: 16, color: DuetColors.textTertiary),
+                                onPressed: () => _codeController.clear(),
+                                tooltip: 'Clear',
                               ),
-                              const SizedBox(width: 4),
-                            ],
-                          ),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            IconButton(
+                              icon: const Icon(LucideIcons.clipboard, size: 18, color: DuetColors.primaryGlow),
+                              onPressed: _pasteFromClipboard,
+                              tooltip: 'Paste from clipboard',
+                            ),
+                            const SizedBox(width: 4),
+                          ],
                         ),
-                        onChanged: (val) {
-                          if (val.contains('http') || val.contains('duet://') || val.contains('?code=')) {
-                            final parsed = _parseMeetingCode(val);
-                            if (parsed.isNotEmpty && parsed != val) {
-                              _codeController.text = parsed;
-                              _codeController.selection = TextSelection.fromPosition(
-                                TextPosition(offset: parsed.length),
-                              );
-                            }
-                          }
-                        },
                       ),
+                      onChanged: (val) {
+                        if (val.contains('http') || val.contains('duet://') || val.contains('?code=')) {
+                          final parsed = _parseMeetingCode(val);
+                          if (parsed.isNotEmpty && parsed != val) {
+                            _codeController.text = parsed;
+                            _codeController.selection = TextSelection.fromPosition(
+                              TextPosition(offset: parsed.length),
+                            );
+                          }
+                        }
+                      },
                     ),
 
                     const SizedBox(height: 20),
@@ -316,23 +305,12 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: DuetColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: DuetColors.border),
-                      ),
-                      child: TextField(
-                        controller: _nameController,
-                        style: const TextStyle(fontSize: 15, color: DuetColors.textPrimary, fontWeight: FontWeight.w500),
-                        decoration: const InputDecoration(
-                          hintText: 'e.g. Alex',
-                          prefixIcon: Icon(LucideIcons.user, size: 20, color: DuetColors.textSecondary),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                        ),
+                    TextField(
+                      controller: _nameController,
+                      style: const TextStyle(fontSize: 15, color: DuetColors.textPrimary, fontWeight: FontWeight.w500),
+                      decoration: const InputDecoration(
+                        hintText: 'e.g. Alex',
+                        prefixIcon: Icon(LucideIcons.user, size: 19, color: DuetColors.textSecondary),
                       ),
                     ),
 

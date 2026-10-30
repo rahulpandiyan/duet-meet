@@ -101,10 +101,12 @@ class _DuetAppState extends State<DuetApp> with WidgetsBindingObserver {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: DuetColors.primaryGlow, width: 1.2),
+            borderSide: const BorderSide(color: DuetColors.primary, width: 1.5),
           ),
+          prefixIconColor: DuetColors.textSecondary,
+          suffixIconColor: DuetColors.textSecondary,
           labelStyle: const TextStyle(fontSize: 13, color: DuetColors.textSecondary),
-          hintStyle: const TextStyle(fontSize: 13, color: DuetColors.textTertiary),
+          hintStyle: const TextStyle(fontSize: 14, color: DuetColors.textTertiary, fontFamily: 'Outfit'),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
