@@ -1,224 +1,137 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:livekit_client/livekit_client.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'theme.dart';
+import 'screens/home_screen.dart';
+import 'screens/join_meeting_screen.dart';
+
+// Exports for consumers
+export 'screens/home_screen.dart';
+export 'screens/join_meeting_screen.dart';
+export 'screens/create_meeting_screen.dart';
+export 'screens/meeting_screen.dart';
 
 const defaultWebAppUrl = 'https://duetxmeet.vercel.app';
 
-void main() => runApp(const DuetApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const DuetApp());
+}
 
-class DuetApp extends StatelessWidget {
+class DuetApp extends StatefulWidget {
   const DuetApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Duet Meet',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1A73E8)),
-        useMaterial3: true,
-      ),
-      home: const JoinPage(),
-    );
-  }
-}
-
-class JoinPage extends StatefulWidget {
-  const JoinPage({super.key});
-  @override
-  State<JoinPage> createState() => _JoinPageState();
-}
-
-class _JoinPageState extends State<JoinPage> {
-  final _code = TextEditingController();
-  final _name = TextEditingController(text: 'Guest');
-  final _webApp = TextEditingController(text: defaultWebAppUrl);
-  bool _loading = false;
-  String? _error;
-
-  Future<void> _join() async {
-    setState(() { _loading = true; _error = null; });
-    try {
-      final base = _webApp.text.trim().replaceAll(RegExp(r'/+$'), '');
-      final res = await http.post(
-        Uri.parse(base + '/api/token'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'code': _code.text.trim(), 'name': _name.text.trim()}),
-      );
-      if (res.statusCode != 200) throw Exception('Join failed: ' + res.body);
-      final data = jsonDecode(res.body);
-      if (!mounted) return;
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => MeetingPage(
-          url: data['url'] as String,
-          token: data['token'] as String,
-          name: _name.text.trim(),
-          isHost: data['isHost'] == true,
-        ),
-      ));
-    } catch (e) {
-      setState(() { _error = e.toString(); });
-    } finally {
-      setState(() { _loading = false; });
-    }
-  }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Duet Meet')),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text('Join a meeting', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            TextField(controller: _code, decoration: const InputDecoration(labelText: 'Meeting code', border: OutlineInputBorder())),
-            const SizedBox(height: 12),
-            TextField(controller: _name, decoration: const InputDecoration(labelText: 'Your name', border: OutlineInputBorder())),
-            const SizedBox(height: 12),
-            TextField(controller: _webApp, decoration: const InputDecoration(labelText: 'Web app URL', border: OutlineInputBorder())),
-            const SizedBox(height: 8),
-            const Text('Use your deployed Duet URL or http://10.0.2.2:3000 for emulator', style: TextStyle(fontSize: 12, color: Colors.grey)),
-            const SizedBox(height: 16),
-            if (_error != null) Text(_error!, style: const TextStyle(color: Colors.red)),
-            ElevatedButton(
-              onPressed: _loading ? null : _join,
-              child: Text(_loading ? 'Joining...' : 'Join meeting'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  State<DuetApp> createState() => _DuetAppState();
 }
 
-class MeetingPage extends StatefulWidget {
-  final String url;
-  final String token;
-  final String name;
-  final bool isHost;
-  const MeetingPage({super.key, required this.url, required this.token, required this.name, required this.isHost});
-  @override
-  State<MeetingPage> createState() => _MeetingPageState();
-}
-
-class _MeetingPageState extends State<MeetingPage> {
-  Room? _room;
-  bool _micOn = false;
-  bool _camOn = false;
-  bool _sharing = false;
-  String _status = 'Connecting...';
-  static const _screenChannel = MethodChannel('screen_capture');
+class _DuetAppState extends State<DuetApp> with WidgetsBindingObserver {
+  String _serverUrl = defaultWebAppUrl;
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
     super.initState();
-    _connect();
-  }
-
-  Future<void> _connect() async {
-    final room = Room();
-    _room = room;
-    room.addListener(_onRoomChanged);
-    try {
-      await [Permission.microphone, Permission.camera].request();
-      await room.connect(widget.url, widget.token);
-      await room.localParticipant?.setMicrophoneEnabled(true);
-      await room.localParticipant?.setCameraEnabled(false);
-      setState(() { _status = 'Connected'; _micOn = true; });
-    } catch (e) {
-      setState(() { _status = 'Failed: $e'; });
-    }
-  }
-
-  void _onRoomChanged() {
-    if (mounted) setState(() {});
-  }
-
-  Future<void> _toggleMic() async {
-    final p = _room?.localParticipant;
-    if (p == null) return;
-    await p.setMicrophoneEnabled(!_micOn);
-    setState(() { _micOn = !_micOn; });
-  }
-
-  Future<void> _toggleCam() async {
-    final p = _room?.localParticipant;
-    if (p == null) return;
-    await p.setCameraEnabled(!_camOn);
-    setState(() { _camOn = !_camOn; });
-  }
-
-  Future<void> _toggleShare() async {
-    final p = _room?.localParticipant;
-    if (p == null) return;
-    try {
-      if (!_sharing) await _screenChannel.invokeMethod('start');
-      await p.setScreenShareEnabled(!_sharing);
-      setState(() { _sharing = !_sharing; });
-      if (_sharing) await _screenChannel.invokeMethod('stop');
-    } catch (e) {
-      try { await _screenChannel.invokeMethod('stop'); } catch (_) {}
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Share failed: $e')));
-    }
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
-    _room?.removeListener(_onRoomChanged);
-    _room?.disconnect();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  List<VideoTrack> _remoteVideoTracks() {
-    final room = _room;
-    if (room == null) return [];
-    final tracks = <VideoTrack>[];
-    for (final p in room.remoteParticipants.values) {
-      for (final pub in p.trackPublications.values) {
-        final t = pub.track;
-        if (t is RemoteVideoTrack) tracks.add(t);
+  void _updateServerUrl(String url) {
+    setState(() {
+      _serverUrl = url;
+    });
+  }
+
+  /// Parses deep link URLs like duet://meet/ABC-DEF-GHI or https://duetxmeet.vercel.app/join?code=ABC-DEF-GHI
+  String? _extractCodeFromUri(Uri uri) {
+    if (uri.queryParameters.containsKey('code')) {
+      return uri.queryParameters['code']?.toUpperCase();
+    }
+    if (uri.pathSegments.isNotEmpty) {
+      final last = uri.pathSegments.last;
+      if (last != 'join' && last != 'lobby' && last != 'room' && last.isNotEmpty) {
+        return last.toUpperCase();
       }
     }
-    return tracks;
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
-    final tracks = _remoteVideoTracks();
-    return Scaffold(
-      appBar: AppBar(title: Text('Duet — ${widget.name}', overflow: TextOverflow.ellipsis)),
-      body: Column(
-        children: [
-          Padding(padding: const EdgeInsets.all(8), child: Text(_status, style: const TextStyle(fontSize: 12))),
-          Expanded(
-            child: tracks.isEmpty
-                ? const Center(child: Text('No remote video yet'))
-                : GridView.count(
-                    crossAxisCount: tracks.length == 1 ? 1 : 2,
-                    children: tracks.map((t) => Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: VideoTrackRenderer(t),
-                    )).toList(),
-                  ),
+    return MaterialApp(
+      navigatorKey: _navigatorKey,
+      title: 'Duet',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: DuetColors.appBg,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: DuetColors.primary,
+          brightness: Brightness.light,
+          surface: DuetColors.surface,
+        ),
+        fontFamily: 'Inter',
+        appBarTheme: const AppBarTheme(
+          elevation: 0,
+          backgroundColor: DuetColors.appBg,
+          foregroundColor: DuetColors.textPrimary,
+          scrolledUnderElevation: 0,
+          centerTitle: false,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: DuetColors.border, width: 1),
           ),
-          Container(
-            padding: const EdgeInsets.all(12),
-            color: Colors.black87,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(onPressed: _toggleMic, icon: Icon(_micOn ? Icons.mic : Icons.mic_off), color: Colors.white),
-                IconButton(onPressed: _toggleCam, icon: Icon(_camOn ? Icons.videocam : Icons.videocam_off), color: Colors.white),
-                IconButton(onPressed: _toggleShare, icon: Icon(_sharing ? Icons.stop_screen_share : Icons.screen_share), color: _sharing ? Colors.green : Colors.white),
-                IconButton(onPressed: () { _room?.disconnect(); Navigator.of(context).pop(); }, icon: const Icon(Icons.call_end), color: Colors.red),
-              ],
-            ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: DuetColors.border, width: 1),
           ),
-        ],
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: DuetColors.primary, width: 1.5),
+          ),
+          labelStyle: const TextStyle(fontSize: 13, color: DuetColors.textSecondary),
+          hintStyle: const TextStyle(fontSize: 13, color: DuetColors.textTertiary),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            backgroundColor: DuetColors.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ),
+      onGenerateRoute: (settings) {
+        if (settings.name != null) {
+          try {
+            final uri = Uri.parse(settings.name!);
+            final code = _extractCodeFromUri(uri);
+            if (code != null) {
+              return MaterialPageRoute(
+                builder: (_) => JoinMeetingScreen(
+                  serverUrl: _serverUrl,
+                  initialCode: code,
+                ),
+              );
+            }
+          } catch (_) {}
+        }
+        return null;
+      },
+      home: HomeScreen(
+        serverUrl: _serverUrl,
+        onServerUrlChanged: _updateServerUrl,
       ),
     );
   }

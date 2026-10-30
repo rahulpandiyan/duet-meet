@@ -5,3 +5,9 @@ node_modules/
 .agents/
 .DS_Store
 *.log
+opencode.json
+screenshots/
+stitch_*.html
+capture_screens.js
+check_errors.js
+test_room_ui.js

@@ -3,13 +3,6 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { LiveKitRoom } from "@livekit/components-react";
 import "@livekit/components-styles";
-import { Logo } from "@/components/Logo";
-import { Button, IconButton, Avatar, Badge } from "@/components/ui";
-import {
-  Mic, MicOff, Video, VideoOff, Monitor, MonitorOff, Users, MessageSquare,
-  LayoutGrid, Maximize2, Columns3, PhoneOff, MoreHorizontal, Copy, Wifi, WifiOff,
-  Settings, Lock, Unlock, UserX, Shield
-} from "lucide-react";
 import RoomInner from "@/components/RoomInner";
 
 export default function RoomPage() {
@@ -36,29 +29,33 @@ export default function RoomPage() {
     if (n) setName(n);
     if (h) {
       setIsHost(true);
-      // hostToken may be stored as actual token (create) or "1" (join with hostToken? not). Handle:
       const ht = sessionStorage.getItem(`duet:hostToken:${code}`);
       if (ht) setHostToken(ht);
     }
-    // If created, hostToken stored under duet:host:<code> as actual token string
     const maybeHostToken = sessionStorage.getItem(`duet:host:${code}`);
     if (maybeHostToken && maybeHostToken !== "1") setHostToken(maybeHostToken);
   }, [code, router]);
 
   if (!token) {
-    return <div className="min-h-screen bg-app-bg flex items-center justify-center text-text-secondary">Loading meeting…</div>;
+    return (
+      <div className="min-h-screen bg-[#202124] flex items-center justify-center text-white/60 text-sm">
+        Joining meeting…
+      </div>
+    );
   }
 
   return (
-    <LiveKitRoom
-      video={false}
-      audio={false}
-      token={token}
-      serverUrl={url}
-      connect={true}
-      options={{ adaptiveStream: true, dynacast: true }}
-    >
-      <RoomInner code={code} name={name} isHost={isHost} hostToken={hostToken} />
-    </LiveKitRoom>
+    <div className="dark h-screen w-screen bg-[#202124] text-white overflow-hidden">
+      <LiveKitRoom
+        video={false}
+        audio={false}
+        token={token}
+        serverUrl={url}
+        connect={true}
+        options={{ adaptiveStream: true, dynacast: true }}
+      >
+        <RoomInner code={code} name={name} isHost={isHost} hostToken={hostToken} />
+      </LiveKitRoom>
+    </div>
   );
 }
