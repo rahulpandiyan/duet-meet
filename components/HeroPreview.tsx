@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 export default function HeroPreview() {
   return (
     <motion.div
-      className="relative w-full rounded-2xl overflow-hidden border border-slate-200/80 shadow-2xl bg-slate-900 group"
+      className="relative w-full rounded-2xl overflow-hidden border border-slate-200/80 shadow-2xl bg-white group"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
@@ -15,8 +15,8 @@ export default function HeroPreview() {
       <Image
         src="/hero-preview.webp"
         alt="Duet simultaneous multi-screen sharing preview"
-        width={1672}
-        height={941}
+        width={1024}
+        height={576}
         priority
         className="w-full h-auto object-cover block rounded-2xl"
       />
