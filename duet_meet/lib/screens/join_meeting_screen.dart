@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../theme.dart';
+import '../widgets/duet_button.dart';
 import 'meeting_screen.dart';
 
 class JoinMeetingScreen extends StatefulWidget {
@@ -140,7 +141,7 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
           'Join a call',
           style: TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
             color: DuetColors.textPrimary,
           ),
         ),
@@ -148,12 +149,28 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 440),
               child: Container(
-                padding: const EdgeInsets.all(28),
-                decoration: DuetMorphism.cardDecoration(),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: DuetColors.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: DuetColors.border),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x080F172A),
+                      offset: Offset(0, 6),
+                      blurRadius: 18,
+                    ),
+                    BoxShadow(
+                      color: Color(0x030F172A),
+                      offset: Offset(0, 1),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -163,7 +180,11 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
                         Container(
                           width: 48,
                           height: 48,
-                          decoration: DuetMorphism.iconContainer,
+                          decoration: BoxDecoration(
+                            color: DuetColors.primaryTint,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: DuetColors.primaryBorder),
+                          ),
                           child: const Icon(Icons.login_rounded, color: DuetColors.primary, size: 24),
                         ),
                         const SizedBox(width: 14),
@@ -175,7 +196,7 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
                                 'Enter call details',
                                 style: TextStyle(
                                   fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w600,
                                   color: DuetColors.textPrimary,
                                   letterSpacing: -0.2,
                                 ),
@@ -184,7 +205,7 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
                               Text(
                                 'Join with code or pasted invite link',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 13,
                                   color: DuetColors.textSecondary,
                                 ),
                               ),
@@ -201,7 +222,7 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
                       'MEETING CODE OR LINK',
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: DuetColors.textSecondary,
                         letterSpacing: 0.8,
                       ),
@@ -221,7 +242,6 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
                         prefixIcon: Icon(Icons.tag_rounded, size: 18, color: DuetColors.textTertiary),
                       ),
                       onChanged: (val) {
-                        // If user pastes a URL, extract clean code in real-time
                         if (val.contains('http') || val.contains('duet://') || val.contains('?code=')) {
                           final parsed = _parseMeetingCode(val);
                           if (parsed.isNotEmpty && parsed != val) {
@@ -241,7 +261,7 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
                       'YOUR DISPLAY NAME',
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: DuetColors.textSecondary,
                         letterSpacing: 0.8,
                       ),
@@ -262,7 +282,7 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: DuetColors.danger.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: DuetColors.danger.withValues(alpha: 0.2)),
                         ),
                         child: Row(
@@ -282,23 +302,12 @@ class _JoinMeetingScreenState extends State<JoinMeetingScreen> {
 
                     const SizedBox(height: 24),
 
-                    // Join Button
-                    ElevatedButton(
-                      onPressed: _loading ? null : _join,
-                      child: _loading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text('Join call'),
-                                SizedBox(width: 8),
-                                Icon(Icons.arrow_forward_rounded, size: 18),
-                              ],
-                            ),
+                    // Join Button with combo of Neumorphism & Claymorphism
+                    DuetButton(
+                      text: 'Join call',
+                      icon: Icons.arrow_forward_rounded,
+                      loading: _loading,
+                      onPressed: _join,
                     ),
                   ],
                 ),

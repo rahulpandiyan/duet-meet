@@ -67,11 +67,11 @@ class _DuetAppState extends State<DuetApp> with WidgetsBindingObserver {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        brightness: Brightness.light,
+        brightness: Brightness.dark,
         scaffoldBackgroundColor: DuetColors.appBg,
         colorScheme: ColorScheme.fromSeed(
           seedColor: DuetColors.primary,
-          brightness: Brightness.light,
+          brightness: Brightness.dark,
           surface: DuetColors.surface,
         ),
         fontFamily: 'Inter',
@@ -84,18 +84,18 @@ class _DuetAppState extends State<DuetApp> with WidgetsBindingObserver {
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.white,
+          fillColor: DuetColors.surfaceElevated,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: DuetColors.border, width: 1),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: DuetColors.border, width: 1),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: DuetColors.primary, width: 1.5),
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: DuetColors.primaryGlow, width: 1.2),
           ),
           labelStyle: const TextStyle(fontSize: 13, color: DuetColors.textSecondary),
           hintStyle: const TextStyle(fontSize: 13, color: DuetColors.textTertiary),
@@ -107,7 +107,7 @@ class _DuetAppState extends State<DuetApp> with WidgetsBindingObserver {
             backgroundColor: DuetColors.primary,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
         ),

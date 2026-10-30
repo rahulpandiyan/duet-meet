@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import '../theme.dart';
 import '../widgets/settings_sheet.dart';
 import 'create_meeting_screen.dart';
@@ -57,224 +58,206 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: DuetColors.appBg,
       body: SafeArea(
-        child: Stack(
-          children: [
-            // Subtle, faint ambient background decoration circles near bottom
-            Positioned(
-              bottom: -60,
-              right: -50,
-              child: IgnorePointer(
-                child: Container(
-                  width: 240,
-                  height: 240,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: DuetColors.primaryBorder.withValues(alpha: 0.35),
-                  ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
                 ),
-              ),
-            ),
-            Positioned(
-              bottom: 80,
-              left: -40,
-              child: IgnorePointer(
-                child: Container(
-                  width: 180,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: DuetColors.primaryTint.withValues(alpha: 0.5),
-                  ),
-                ),
-              ),
-            ),
-
-            // Main Content Layout
-            LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                child: Align(
+                  alignment: Alignment.topCenter,
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight - 24,
-                    ),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 480),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // 3.A Header
-                            _buildHeader(),
-
-                            const SizedBox(height: 36),
-
-                            // 3.B Hero Section
-                            _buildHeroSection(),
-
-                            const SizedBox(height: 36),
-
-                            // 3.C Exactly TWO Primary Action Cards
-                            _buildActionCard(
-                              index: 0,
-                              icon: Icons.link_rounded,
-                              title: 'Create link',
-                              description: 'Start an instant call.',
-                              onTap: _navigateToCreate,
-                            ),
-
-                            const SizedBox(height: 16),
-
-                            _buildActionCard(
-                              index: 1,
-                              icon: Icons.login_rounded,
-                              title: 'Join a call',
-                              description: 'Enter a code or link.',
-                              onTap: _navigateToJoin,
-                            ),
-
-                            const SizedBox(height: 32),
-                          ],
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 16),
+                        _buildHeader(),
+                        const SizedBox(height: 52),
+                        _buildHeroSection(),
+                        const SizedBox(height: 40),
+                        _buildActionCard(
+                          index: 0,
+                          icon: LucideIcons.link,
+                          title: 'Create link',
+                          description: 'Start an instant call',
+                          onTap: _navigateToCreate,
                         ),
-                      ),
+                        const SizedBox(height: 14),
+                        _buildActionCard(
+                          index: 1,
+                          icon: LucideIcons.log_in,
+                          title: 'Join a call',
+                          description: 'Enter a code or link',
+                          onTap: _navigateToJoin,
+                        ),
+                        const SizedBox(height: 48),
+                      ],
                     ),
                   ),
-                );
-              },
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Header
+  Widget _buildHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: DuetColors.surface,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: DuetColors.border),
+              ),
+              padding: const EdgeInsets.all(6),
+              child: Image.asset(
+                'assets/logo.png',
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  LucideIcons.video,
+                  size: 22,
+                  color: DuetColors.primary,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Duet',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: DuetColors.textPrimary,
+                    letterSpacing: -0.3,
+                    height: 1.1,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Call. Share. Do together.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: DuetColors.textTertiary,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  /// 3.A Header: Logo + Duet + Tagline on left, Settings on right
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 6, bottom: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Left: Logo + Wordmark + Tagline
-          Row(
-            children: [
-              // Duet Logo Mark
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: DuetColors.border, width: 1),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x0A0F172A),
-                      offset: Offset(0, 2),
-                      blurRadius: 4,
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(5),
-                child: Image.asset(
-                  'assets/logo.png',
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.devices_rounded,
-                    size: 20,
-                    color: DuetColors.primary,
-                  ),
-                ),
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: const Color(0xFF151B2C),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: DuetColors.border),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x66000000),
+                offset: Offset(6, 6),
+                blurRadius: 12,
+                spreadRadius: -6,
               ),
-              const SizedBox(width: 12),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Duet',
-                    style: TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w800,
-                      color: DuetColors.textPrimary,
-                      letterSpacing: -0.4,
-                      height: 1.1,
-                    ),
-                  ),
-                  SizedBox(height: 2),
-                  Text(
-                    'Call. Share. Do together.',
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w500,
-                      color: DuetColors.textSecondary,
-                      letterSpacing: -0.1,
-                    ),
-                  ),
-                ],
+              BoxShadow(
+                color: Color(0x12FFFFFF),
+                offset: Offset(-4, -4),
+                blurRadius: 10,
+                spreadRadius: -6,
               ),
             ],
           ),
-
-          // Right: Small Settings icon button
-          Material(
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-              side: const BorderSide(color: DuetColors.border, width: 1),
-            ),
-            elevation: 0,
+          child: Material(
+            color: Colors.transparent,
             child: InkWell(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(14),
               onTap: _openSettings,
-              child: const SizedBox(
-                width: 38,
-                height: 38,
-                child: Center(
-                  child: Icon(
-                    Icons.settings_outlined,
-                    size: 19,
-                    color: DuetColors.textSecondary,
-                  ),
+              child: const Center(
+                child: Icon(
+                  LucideIcons.settings,
+                  size: 20,
+                  color: DuetColors.textSecondary,
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 3.B Hero Section: "Meet without limits" + supporting text
-  Widget _buildHeroSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        Text(
-          'Meet without limits',
-          style: TextStyle(
-            fontSize: 27,
-            fontWeight: FontWeight.w800,
-            color: DuetColors.textPrimary,
-            letterSpacing: -0.6,
-            height: 1.2,
-          ),
-        ),
-        SizedBox(height: 10),
-        Text(
-          'No account needed. Start or join a call instantly.',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: DuetColors.textSecondary,
-            height: 1.45,
           ),
         ),
       ],
     );
   }
 
-  /// 3.C Primary Action Card with 58px soft clay icon container and far-right aligned arrow
+  /// Hero Section
+  Widget _buildHeroSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: DuetColors.surface,
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: DuetColors.border),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(LucideIcons.sparkles, size: 14, color: DuetColors.primaryGlow),
+                  SizedBox(width: 6),
+                  Text(
+                    'Multi-screen sharing',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: DuetColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        const Text(
+          'Meet without\nlimits',
+          style: TextStyle(
+            fontSize: 38,
+            fontWeight: FontWeight.w600,
+            color: DuetColors.textPrimary,
+            letterSpacing: -1.4,
+            height: 1.05,
+          ),
+        ),
+        const SizedBox(height: 14),
+        const Text(
+          'No account needed. Start or join a call instantly with a clean, modern space built for sharing.',
+          style: TextStyle(
+            fontSize: 16,
+            color: DuetColors.textSecondary,
+            height: 1.8,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Action Card
   Widget _buildActionCard({
     required int index,
     required IconData icon,
@@ -285,50 +268,83 @@ class _HomeScreenState extends State<HomeScreen> {
     final isPressed = _pressedIndex == index;
 
     return AnimatedScale(
-      scale: isPressed ? 0.985 : 1.0,
-      duration: const Duration(milliseconds: 100),
+      scale: isPressed ? 0.99 : 1.0,
+      duration: const Duration(milliseconds: 140),
       curve: Curves.easeOutCubic,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           onTapDown: (_) => setState(() => _pressedIndex = index),
           onTapUp: (_) => setState(() => _pressedIndex = null),
           onTapCancel: () => setState(() => _pressedIndex = null),
           onTap: onTap,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-            decoration: DuetMorphism.cardDecoration(isPressed: isPressed),
+            height: 112,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF151B2C),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: DuetColors.border),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x66000000),
+                  offset: Offset(10, 10),
+                  blurRadius: 24,
+                  spreadRadius: -10,
+                ),
+                BoxShadow(
+                  color: Color(0x12FFFFFF),
+                  offset: Offset(-6, -6),
+                  blurRadius: 16,
+                  spreadRadius: -10,
+                ),
+              ],
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // 3.D Soft Claymorphic Icon Container (58px)
                 Container(
-                  width: 58,
-                  height: 58,
-                  decoration: DuetMorphism.iconContainer,
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1C2235),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: DuetColors.primaryBorder),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x663B82F6),
+                        offset: Offset(6, 6),
+                        blurRadius: 14,
+                        spreadRadius: -8,
+                      ),
+                      BoxShadow(
+                        color: Color(0x10FFFFFF),
+                        offset: Offset(-4, -4),
+                        blurRadius: 10,
+                        spreadRadius: -8,
+                      ),
+                    ],
+                  ),
                   child: Center(
                     child: Icon(
                       icon,
-                      color: DuetColors.primary,
-                      size: 27,
+                      color: DuetColors.primaryGlow,
+                      size: 22,
                     ),
                   ),
                 ),
-
-                const SizedBox(width: 18),
-
-                // Card Title & Description
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         title,
                         style: const TextStyle(
                           fontSize: 17,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: DuetColors.textPrimary,
                           letterSpacing: -0.2,
                         ),
@@ -337,22 +353,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(
                         description,
                         style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
+                          fontSize: 14,
                           color: DuetColors.textSecondary,
                         ),
                       ),
                     ],
                   ),
                 ),
-
                 const SizedBox(width: 12),
-
-                // 3.E Exactly aligned far-right arrow
                 const Icon(
-                  Icons.arrow_forward_rounded,
+                  LucideIcons.arrow_right,
                   color: DuetColors.textTertiary,
-                  size: 22,
+                  size: 18,
                 ),
               ],
             ),

@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import '../theme.dart';
+import '../widgets/duet_button.dart';
 
 class MeetingPage extends StatefulWidget {
   final String code;
@@ -196,47 +197,29 @@ class _MeetingPageState extends State<MeetingPage> {
 
               // If host, offer End for everyone
               if (widget.isHost) ...[
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEA4335),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  icon: const Icon(Icons.call_end_rounded, size: 18),
-                  label: const Text('End call for everyone', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                DuetButton(
+                  text: 'End call for everyone',
+                  icon: Icons.call_end_rounded,
+                  variant: DuetButtonVariant.danger,
                   onPressed: () {
                     Navigator.of(ctx).pop();
                     _endForEveryone();
                   },
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
               ],
 
-              // Leave call button
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.isHost ? const Color(0xFF3C4043) : const Color(0xFFEA4335),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Text(
-                  widget.isHost ? 'Just leave the call' : 'Leave call',
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                ),
+              // Leave call button with tactile Claymorphism
+              DuetButton(
+                text: widget.isHost ? 'Just leave the call' : 'Leave call',
+                icon: Icons.phone_disabled_rounded,
+                variant: widget.isHost ? DuetButtonVariant.secondary : DuetButtonVariant.danger,
                 onPressed: () {
                   Navigator.of(ctx).pop();
                   _leaveCallDirectly();
                 },
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
 
               // Cancel button
               TextButton(

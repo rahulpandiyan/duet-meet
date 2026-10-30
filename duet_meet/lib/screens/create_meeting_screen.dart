@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import '../theme.dart';
+import '../widgets/duet_button.dart';
 import 'meeting_screen.dart';
 
 class CreateMeetingScreen extends StatefulWidget {
@@ -103,31 +105,68 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: DuetColors.appBg,
-      appBar: AppBar(
-        backgroundColor: DuetColors.appBg,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: DuetColors.textPrimary),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          'Create a meeting',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: DuetColors.textPrimary,
-          ),
-        ),
-      ),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 440),
-              child: _createdRoom == null ? _buildCreateForm() : _buildSuccessCard(),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF151B2C),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: DuetColors.border),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x66000000),
+                          offset: Offset(6, 6),
+                          blurRadius: 12,
+                          spreadRadius: -6,
+                        ),
+                        BoxShadow(
+                          color: Color(0x12FFFFFF),
+                          offset: Offset(-4, -4),
+                          blurRadius: 10,
+                          spreadRadius: -6,
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () => Navigator.of(context).pop(),
+                        child: const Icon(LucideIcons.arrow_left, color: DuetColors.textPrimary, size: 20),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Create a meeting',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: DuetColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    child: _createdRoom == null ? _buildCreateForm() : _buildSuccessCard(),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -135,18 +174,54 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
 
   Widget _buildCreateForm() {
     return Container(
-      padding: const EdgeInsets.all(28),
-      decoration: DuetMorphism.cardDecoration(),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF151B2C),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: DuetColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x66000000),
+            offset: Offset(12, 12),
+            blurRadius: 28,
+            spreadRadius: -12,
+          ),
+          BoxShadow(
+            color: Color(0x12FFFFFF),
+            offset: Offset(-6, -6),
+            blurRadius: 18,
+            spreadRadius: -12,
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
               Container(
-                width: 48,
-                height: 48,
-                decoration: DuetMorphism.iconContainer,
-                child: const Icon(Icons.add_link_rounded, color: DuetColors.primary, size: 24),
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1C2235),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: DuetColors.primaryBorder),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x663B82F6),
+                      offset: Offset(6, 6),
+                      blurRadius: 14,
+                      spreadRadius: -8,
+                    ),
+                    BoxShadow(
+                      color: Color(0x10FFFFFF),
+                      offset: Offset(-4, -4),
+                      blurRadius: 10,
+                      spreadRadius: -8,
+                    ),
+                  ],
+                ),
+                child: const Icon(LucideIcons.link, color: DuetColors.primaryGlow, size: 22),
               ),
               const SizedBox(width: 14),
               const Expanded(
@@ -157,7 +232,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                       'Instant meeting',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                         color: DuetColors.textPrimary,
                         letterSpacing: -0.2,
                       ),
@@ -166,7 +241,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                     Text(
                       'Multi-screen sharing enabled',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 14,
                         color: DuetColors.textSecondary,
                       ),
                     ),
@@ -176,25 +251,24 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
             ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 26),
 
-          // Host Name Input
           const Text(
             'YOUR DISPLAY NAME',
             style: TextStyle(
               fontSize: 11,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: DuetColors.textSecondary,
               letterSpacing: 0.8,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           TextField(
             controller: _nameController,
             style: const TextStyle(fontSize: 14, color: DuetColors.textPrimary),
             decoration: const InputDecoration(
               hintText: 'e.g. Alex (Host)',
-              prefixIcon: Icon(Icons.person_outline_rounded, size: 18, color: DuetColors.textTertiary),
+              prefixIcon: Icon(LucideIcons.user, size: 18, color: DuetColors.textTertiary),
             ),
           ),
 
@@ -203,18 +277,18 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: DuetColors.danger.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: DuetColors.danger.withValues(alpha: 0.2)),
+                color: DuetColors.danger.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: DuetColors.danger.withValues(alpha: 0.4)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.error_outline_rounded, size: 18, color: DuetColors.danger),
+                  const Icon(LucideIcons.circle_alert, size: 18, color: DuetColors.danger),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       _error!,
-                      style: const TextStyle(fontSize: 12, color: DuetColors.danger),
+                      style: const TextStyle(fontSize: 12, color: DuetColors.textSecondary),
                     ),
                   ),
                 ],
@@ -224,23 +298,12 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
 
           const SizedBox(height: 24),
 
-          // Submit CTA
-          ElevatedButton(
-            onPressed: _loading ? null : _createMeeting,
-            child: _loading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                  )
-                : const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Start instant meeting'),
-                      SizedBox(width: 8),
-                      Icon(Icons.arrow_forward_rounded, size: 18),
-                    ],
-                  ),
+          // Start meeting CTA with combo of Neumorphism & Claymorphism
+          DuetButton(
+            text: 'Start instant meeting',
+            icon: LucideIcons.arrow_right,
+            loading: _loading,
+            onPressed: _createMeeting,
           ),
         ],
       ),
@@ -252,12 +315,28 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
     final inviteLink = '${widget.serverUrl.replaceAll(RegExp(r'/+$'), '')}/join?code=$code';
 
     return Container(
-      padding: const EdgeInsets.all(28),
-      decoration: DuetMorphism.cardDecoration(),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: DuetColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: DuetColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x080F172A),
+            offset: Offset(0, 6),
+            blurRadius: 18,
+          ),
+          BoxShadow(
+            color: Color(0x030F172A),
+            offset: Offset(0, 1),
+            blurRadius: 4,
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Green Success Icon
+          // Success Icon
           Center(
             child: Container(
               width: 56,
@@ -276,7 +355,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
               'Your meeting is ready',
               style: TextStyle(
                 fontSize: 20,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
                 color: DuetColors.textPrimary,
                 letterSpacing: -0.3,
               ),
@@ -287,7 +366,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
             child: Text(
               'Share this code or link with others to join.',
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 14,
                 color: DuetColors.textSecondary,
               ),
             ),
@@ -295,7 +374,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
 
           const SizedBox(height: 24),
 
-          // Monospace Code Box
+          // Code Box
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
@@ -310,8 +389,8 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                   code,
                   style: const TextStyle(
                     fontFamily: 'monospace',
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: 2,
                     color: DuetColors.textPrimary,
                   ),
@@ -329,36 +408,23 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
             ),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
 
-          // Copy Link Button
-          OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 13),
-              side: const BorderSide(color: DuetColors.border),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            icon: const Icon(Icons.link_rounded, size: 18, color: DuetColors.textSecondary),
-            label: const Text(
-              'Copy invitation link',
-              style: TextStyle(fontSize: 13, color: DuetColors.textSecondary, fontWeight: FontWeight.w600),
-            ),
+          // Copy Link Button with subtle secondary Neumorphic + Claymorphic depth
+          DuetButton(
+            text: 'Copy invitation link',
+            icon: Icons.link_rounded,
+            variant: DuetButtonVariant.secondary,
             onPressed: () => _copyToClipboard(inviteLink, 'Invitation link copied to clipboard'),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 14),
 
-          // Enter Meeting CTA
-          ElevatedButton(
+          // Enter Meeting CTA with primary Neumorphic + Claymorphic styling
+          DuetButton(
+            text: 'Enter meeting room',
+            icon: LucideIcons.arrow_right,
             onPressed: _enterMeeting,
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Enter meeting room'),
-                SizedBox(width: 8),
-                Icon(Icons.arrow_forward_rounded, size: 18),
-              ],
-            ),
           ),
         ],
       ),

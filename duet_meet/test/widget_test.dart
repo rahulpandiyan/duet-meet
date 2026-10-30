@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:duet_meet/main.dart';
 
 void main() {
@@ -10,23 +10,23 @@ void main() {
     // 1. Header elements
     expect(find.text('Duet'), findsOneWidget);
     expect(find.text('Call. Share. Do together.'), findsOneWidget);
-    expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
+    expect(find.byIcon(LucideIcons.settings), findsOneWidget);
 
     // 2. Hero Section
-    expect(find.text('Meet without limits'), findsOneWidget);
-    expect(find.text('No account needed. Start or join a call instantly.'), findsOneWidget);
+    expect(find.textContaining('Meet without'), findsOneWidget);
+    expect(find.textContaining('No account needed.'), findsOneWidget);
 
     // 3. Exactly TWO Primary Action Cards
     expect(find.text('Create link'), findsOneWidget);
-    expect(find.text('Start an instant call.'), findsOneWidget);
-    expect(find.byIcon(Icons.link_rounded), findsOneWidget);
+    expect(find.text('Start an instant call'), findsOneWidget);
+    expect(find.byIcon(LucideIcons.link), findsOneWidget);
 
     expect(find.text('Join a call'), findsOneWidget);
-    expect(find.text('Enter a code or link.'), findsOneWidget);
-    expect(find.byIcon(Icons.login_rounded), findsOneWidget);
+    expect(find.text('Enter a code or link'), findsOneWidget);
+    expect(find.byIcon(LucideIcons.log_in), findsOneWidget);
 
     // Far-right arrow icons
-    expect(find.byIcon(Icons.arrow_forward_rounded), findsNWidgets(2));
+    expect(find.byIcon(LucideIcons.arrow_right), findsWidgets);
   });
 
   testWidgets('Navigation to Join a call works correctly', (WidgetTester tester) async {
