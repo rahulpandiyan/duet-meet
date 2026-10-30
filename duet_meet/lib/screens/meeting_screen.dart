@@ -1,6 +1,10 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:livekit_client/livekit_client.dart';
+// ignore: depend_on_referenced_packages
+import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:flutter_background/flutter_background.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -49,7 +53,25 @@ class _MeetingPageState extends State<MeetingPage> {
     _camOn = widget.initialCamOn;
     _updateTime();
     _clockTimer = Timer.periodic(const Duration(seconds: 30), (_) => _updateTime());
+    _initAndroidBackground();
     _connect();
+  }
+
+  Future<void> _initAndroidBackground() async {
+    if (Platform.isAndroid) {
+      const androidConfig = FlutterBackgroundAndroidConfig(
+        notificationTitle: 'Duet Screen Sharing',
+        notificationText: 'You are sharing your screen in Duet.',
+        notificationImportance: AndroidNotificationImportance.normal,
+        notificationIcon: AndroidResource(
+          name: 'ic_launcher',
+          defType: 'mipmap',
+        ),
+      );
+      try {
+        await FlutterBackground.initialize(androidConfig: androidConfig);
+      } catch (_) {}
+    }
   }
 
   void _updateTime() {
@@ -105,13 +127,50 @@ class _MeetingPageState extends State<MeetingPage> {
     if (p == null) return;
     try {
       final next = !_sharing;
-      await p.setScreenShareEnabled(next);
-      setState(() => _sharing = next);
+      if (next) {
+        if (Platform.isAndroid) {
+          // 1. Request Android media projection permission first
+          final hasCapturePermission = await Helper.requestCapturePermission();
+          if (!hasCapturePermission) {
+            return;
+          }
+
+          // 2. Start Android foreground service with mediaProjection type
+          const androidConfig = FlutterBackgroundAndroidConfig(
+            notificationTitle: 'Duet Screen Sharing',
+            notificationText: 'You are sharing your screen in Duet.',
+            notificationImportance: AndroidNotificationImportance.normal,
+            notificationIcon: AndroidResource(
+              name: 'ic_launcher',
+              defType: 'mipmap',
+            ),
+          );
+          await FlutterBackground.initialize(androidConfig: androidConfig);
+          if (!FlutterBackground.isBackgroundExecutionEnabled) {
+            await FlutterBackground.enableBackgroundExecution();
+          }
+        }
+
+        // 3. Enable screen sharing in room
+        await p.setScreenShareEnabled(true, captureScreenAudio: true);
+        if (mounted) setState(() => _sharing = true);
+      } else {
+        await p.setScreenShareEnabled(false);
+        if (Platform.isAndroid && FlutterBackground.isBackgroundExecutionEnabled) {
+          await FlutterBackground.disableBackgroundExecution();
+        }
+        if (mounted) setState(() => _sharing = false);
+      }
     } catch (e) {
+      if (Platform.isAndroid && FlutterBackground.isBackgroundExecutionEnabled) {
+        try {
+          await FlutterBackground.disableBackgroundExecution();
+        } catch (_) {}
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Screen share failed: $e'),
+          content: Text('Screen share cancelled or failed: $e'),
           backgroundColor: DuetColors.danger,
         ),
       );
@@ -123,6 +182,9 @@ class _MeetingPageState extends State<MeetingPage> {
     _clockTimer?.cancel();
     _room?.removeListener(_onRoomChanged);
     _room?.disconnect();
+    if (Platform.isAndroid && FlutterBackground.isBackgroundExecutionEnabled) {
+      FlutterBackground.disableBackgroundExecution();
+    }
     super.dispose();
   }
 
